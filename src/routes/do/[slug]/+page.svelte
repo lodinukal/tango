@@ -13,7 +13,8 @@
 		LocalStorage,
 		ProgressBar
 	} from 'carbon-components-svelte';
-	import { Play, Rocket, ArrowLeft, Music } from 'carbon-icons-svelte';
+	import { fuzzy, search } from 'fast-fuzzy';
+	import { Play, Rocket, ArrowLeft, Music, Star, StarFilled, Restart } from 'carbon-icons-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
@@ -62,9 +63,10 @@
 
 	/**
 	 * @param {string} audio
+	 * @param {boolean} must
 	 */
-	const playAudio = async (audio) => {
-		if (!audioElement.paused) {
+	const playAudio = async (audio, must) => {
+		if (!audioElement.paused && !must) {
 			return;
 		}
 		audioElement.src = audio;
@@ -73,17 +75,20 @@
 	};
 
 	let selected_mode = 1;
-	let selected_mode_name = 'Listening';
+	/**
+	 * @type {"listening"|"reading"|"writing"}
+	 */
+	let selected_mode_name = 'listening';
 	$: {
 		switch (selected_mode) {
 			case 0:
-				selected_mode_name = 'Listening';
+				selected_mode_name = 'listening';
 				break;
 			case 1:
-				selected_mode_name = 'Reading';
+				selected_mode_name = 'reading';
 				break;
 			case 2:
-				selected_mode_name = 'Writing';
+				selected_mode_name = 'writing';
 				break;
 		}
 	}
@@ -143,6 +148,14 @@
 
 	const practiceStateNext = () => {
 		if (current_practice_state == null) return;
+
+		// play audio for non-listening modes after we have the next question
+		if (selected_mode_name != 'listening') {
+			if (current_practice_state.current_item != null) {
+				playAudio(current_practice_state?.current_item?.audio || '', true);
+			}
+		}
+
 		const use_question = current_practice_state.current_question;
 		const max_questions = current_practice_state.max_questions;
 		current_practice_state.current_question++;
@@ -151,9 +164,10 @@
 			return;
 		}
 		current_practice_state.current_item = current_practice_state.data[use_question];
-		if (selected_mode_name == 'Listening') {
-			playAudio(current_practice_state?.current_item?.audio || '');
+		if (selected_mode_name == 'listening') {
+			playAudio(current_practice_state?.current_item?.audio || '', true);
 		}
+		current_learn_progress = getCurrentLearnProgress();
 	};
 
 	/**
@@ -171,10 +185,161 @@
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
 	};
+
+	/**
+	 * @typedef SetItemProgress
+	 * @property {number} id
+	 * @property {number} learn_stars
+	 */
+
+	/**
+	 * @typedef SetProgress
+	 * @property {Object<number, SetItemProgress>} progress_listening
+	 * @property {Object<number, SetItemProgress>} progress_reading
+	 * @property {Object<number, SetItemProgress>} progress_writing
+	 */
+
+	/**
+	 * @type {SetProgress}
+	 */
+	let progress = {
+		progress_listening: {},
+		progress_reading: {},
+		progress_writing: {}
+	};
+
+	/**
+	 * @param {number} id
+	 * @param {boolean} correct
+	 */
+	const updateListeningProgressFor = (id, correct) => {
+		const old_learn_stars = progress.progress_listening[id]?.learn_stars || 0;
+		progress.progress_listening[id] = {
+			id: id,
+			learn_stars: correct ? old_learn_stars + 1 : 0
+		};
+		progress = { ...progress };
+	};
+
+	/**
+	 * @param {number} id
+	 * @param {boolean} correct
+	 */
+	const updateReadingProgressFor = (id, correct) => {
+		const old_learn_stars = progress.progress_reading[id]?.learn_stars || 0;
+		progress.progress_reading[id] = {
+			id: id,
+			learn_stars: correct ? old_learn_stars + 1 : 0
+		};
+		progress = { ...progress };
+	};
+
+	/**
+	 * @param {number} id
+	 * @param {boolean} correct
+	 */
+	const updateWritingProgressFor = (id, correct) => {
+		const old_learn_stars = progress.progress_writing[id]?.learn_stars || 0;
+		progress.progress_writing[id] = {
+			id: id,
+			learn_stars: correct ? old_learn_stars + 1 : 0
+		};
+		progress = { ...progress };
+	};
+
+	/**
+	 * @param {number} id
+	 * @param {"reading"|"listening"|"writing"} mode
+	 * @param {boolean} correct
+	 */
+	const updateProgressFor = (id, correct, mode) => {
+		switch (mode) {
+			case 'reading':
+				updateReadingProgressFor(id, correct);
+				break;
+			case 'listening':
+				updateListeningProgressFor(id, correct);
+				break;
+			case 'writing':
+				updateWritingProgressFor(id, correct);
+				break;
+		}
+	};
+
+	/**
+	 * @param {boolean} is_correct
+	 */
+	const markCurrent = (is_correct) => {
+		if (current_practice_state == null) return;
+		if (current_practice_state.current_item == null) return;
+		if (is_correct) {
+			current_practice_state.correct++;
+			updateProgressFor(current_practice_state.current_item.id, is_correct, selected_mode_name);
+		} else {
+			current_practice_state.incorrect++;
+			updateProgressFor(current_practice_state.current_item.id, is_correct, selected_mode_name);
+		}
+	};
+
+	/**
+	 * @param {number} id
+	 */
+	const getLearnProgressSameMode = (id) => {
+		switch (selected_mode_name) {
+			case 'reading':
+				return progress.progress_reading[id];
+			case 'listening':
+				return progress.progress_listening[id];
+			case 'writing':
+				return progress.progress_writing[id];
+		}
+	};
+
+	const getCurrentLearnProgress = () => {
+		if (current_practice_state == null) return;
+		if (current_practice_state.current_item == null) return;
+		return getLearnProgressSameMode(current_practice_state.current_item.id);
+	};
+	let current_learn_progress = getCurrentLearnProgress();
+
+	const resetProgress = () => {
+		progress = {
+			progress_listening: {},
+			progress_reading: {},
+			progress_writing: {}
+		};
+	};
+
+	let text_input = '';
+
+	const getCorrectnessCurrentAnswer = () => {
+		if (current_practice_state == null) return;
+		if (current_practice_state.current_item == null) return;
+		let comp_to = '';
+		if (selected_mode_name == 'writing') {
+			comp_to = current_practice_state.current_item.kana;
+		} else {
+			comp_to = current_practice_state.current_item.word;
+		}
+		console.log(comp_to, text_input);
+		return (
+			fuzzy(comp_to, text_input, {
+				ignoreCase: true,
+				ignoreSymbols: true
+			}) == 1.0
+		);
+	};
 </script>
 
 <LocalStorage key="count_chosen" bind:value={current_count} />
 <LocalStorage key="mode_chosen" bind:value={selected_mode} />
+<LocalStorage
+	key={`tango_progress_set_id_${data.slug}`}
+	bind:value={progress}
+	on:update={(e) => {
+		console.log('progress updated', e);
+	}}
+/>
 
 {#await loaded_data}
 	<div class="back-box">
@@ -248,34 +413,50 @@
 					icon={Rocket}
 					on:click={() => startPracticeState(got_data.items)}
 				></Button>
+				<div class="x-padding"></div>
+				<Button iconDescription={'reset progress'} icon={Restart} on:click={() => resetProgress()}
+				></Button>
 			</div>
 		</div>
 
-		<div class="word-list">
-			<DataTable
-				headers={[
-					{ key: 'word', value: 'Word' },
-					{ key: 'kana', value: 'Kana' },
-					{ key: 'audio', value: 'Audio' }
-				]}
-				rows={got_data.items}
-			>
-				<svelte:fragment slot="cell" let:row let:cell>
-					{#if cell.key === 'kana'}
-						<Link href="https://jisho.org/search/{cell.value}">{cell.value}</Link>
-					{:else if cell.key === 'audio'}
-						<Button
-							on:click={() => playAudio(cell.value)}
-							icon={Play}
-							disabled={cell.value == ''}
-							iconDescription="Play"
-						/>
-					{:else}
-						{cell.value}
-					{/if}
-				</svelte:fragment>
-			</DataTable>
-		</div>
+		{#key selected_mode}
+			<div class="word-list">
+				<DataTable
+					headers={[
+						{ key: 'word', value: 'Word' },
+						{ key: 'kana', value: 'Kana' },
+						{ key: 'audio', value: 'Audio' },
+						{ key: 'progress', value: 'Progress' }
+					]}
+					rows={got_data.items.map((i) => {
+						return { ...i, progress: i.id };
+					})}
+				>
+					<svelte:fragment slot="cell" let:row let:cell>
+						{#if cell.key === 'kana'}
+							<Link href="https://jisho.org/search/{cell.value}">{cell.value}</Link>
+						{:else if cell.key === 'audio'}
+							<Button
+								on:click={() => playAudio(cell.value, false)}
+								icon={Play}
+								disabled={cell.value == ''}
+								iconDescription="Play"
+							/>
+						{:else if cell.key === 'progress'}
+							{#each { length: 3 } as _, i}
+								{#if i < (getLearnProgressSameMode(cell.value)?.learn_stars || 0)}
+									<StarFilled />
+								{:else}
+									<Star />
+								{/if}
+							{/each}
+						{:else}
+							{cell.value}
+						{/if}
+					</svelte:fragment>
+				</DataTable>
+			</div>
+		{/key}
 	{:else}
 		<div class="top-bar">
 			{#if current_practice_state?.max_questions}
@@ -288,15 +469,15 @@
 		</div>
 		<div class="mid-content-frame">
 			<div class="mid-content-frame-child">
-				{#if selected_mode_name == 'Listening'}
+				{#if selected_mode_name == 'listening'}
 					<Button
 						icon={Music}
 						iconDescription="Play sound"
-						on:click={() => playAudio(current_practice_state?.current_item?.audio || '')}
+						on:click={() => playAudio(current_practice_state?.current_item?.audio || '', false)}
 					/>
 				{:else}
 					<p class="mid-content-text">
-						{selected_mode_name == 'Writing'
+						{selected_mode_name == 'writing'
 							? current_practice_state?.current_item?.word || '?'
 							: current_practice_state?.current_item?.kana || '?'}
 					</p>
@@ -304,13 +485,30 @@
 			</div>
 		</div>
 		<div class="bottom-bar">
+			<div class="star-holder">
+				{#each [0, 1, 2] as i}
+					{#if i < (current_learn_progress?.learn_stars || 0)}
+						<StarFilled size={32} />
+					{:else}
+						<Star size={32} />
+					{/if}
+				{/each}
+			</div>
 			<div class="bottom-bar-text-area">
 				<TextInput
 					light
 					placeholder="Enter answer"
+					bind:value={text_input}
 					on:keydown={(event) => {
 						if (event.code == 'Enter') {
-							practiceStateNext();
+							const correct = getCorrectnessCurrentAnswer() || false;
+							markCurrent(correct);
+							if (correct) {
+								practiceStateNext();
+								text_input = '';
+							} else {
+								alert('Incorrect answer');
+							}
 						}
 					}}
 				/>
@@ -372,6 +570,13 @@
 		padding: 10px;
 	}
 
+	.star-holder {
+		position: absolute;
+		margin-top: 20px;
+		margin-bottom: auto;
+		margin-left: 20px;
+	}
+
 	.back-box {
 		left: 0;
 		z-index: 2;
@@ -410,6 +615,11 @@
 
 	.small-padding {
 		padding-top: 10px;
+	}
+
+	.x-padding {
+		padding-left: 10px;
+		display: inline;
 	}
 
 	@media only screen and (max-width: 800px) {
