@@ -1,5 +1,16 @@
 <script>
-	import { DataTable, Button, Link, Tabs, Tab, TextInput, DataTableSkeleton, TabsSkeleton, ButtonSkeleton, SkeletonText } from 'carbon-components-svelte';
+	import {
+		DataTable,
+		Button,
+		Link,
+		Tabs,
+		Tab,
+		TextInput,
+		DataTableSkeleton,
+		TabsSkeleton,
+		ButtonSkeleton,
+		SkeletonText
+	} from 'carbon-components-svelte';
 	import { Play, Rocket, ArrowLeft, Music } from 'carbon-icons-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
@@ -9,16 +20,16 @@
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-    /**
-     * @typedef SetData
-     * @property {SetItem[]} items
-     * @property {SetInfo} info
-    */
+	/**
+	 * @typedef SetData
+	 * @property {SetItem[]} items
+	 * @property {SetInfo} info
+	 */
 
-    /**
-     * @typedef SetInfo
-     * @property {string} name
-    */
+	/**
+	 * @typedef SetInfo
+	 * @property {string} name
+	 */
 
 	/**
 	 * @typedef SetItem
@@ -45,18 +56,18 @@
 			});
 	}
 
-    const audioElement = new Audio();
+	const audioElement = new Audio();
 
 	/**
 	 * @param {string} audio
 	 */
 	const playAudio = async (audio) => {
-        if (!audioElement.paused) {
-            return;
-        }
-        audioElement.src = audio;
-        audioElement.load();
-        audioElement.play();
+		if (!audioElement.paused) {
+			return;
+		}
+		audioElement.src = audio;
+		audioElement.load();
+		audioElement.play();
 	};
 
 	let selected_mode = 1;
@@ -134,17 +145,16 @@
 	const practiceStateNext = () => {
 		if (current_practice_state == null) return;
 		const use_question = current_practice_state.current_question;
-        const max_questions = current_practice_state.max_questions;
-        current_practice_state.current_question++;
-        if (max_questions && use_question >= max_questions) {
-            finishPractice();
-            return;
-        }
-		current_practice_state.current_item =
-			current_practice_state.data[use_question];
-        if (selected_mode_name == 'Listening') {
-            playAudio(current_practice_state?.current_item?.audio || '');
-        }
+		const max_questions = current_practice_state.max_questions;
+		current_practice_state.current_question++;
+		if (max_questions && use_question >= max_questions) {
+			finishPractice();
+			return;
+		}
+		current_practice_state.current_item = current_practice_state.data[use_question];
+		if (selected_mode_name == 'Listening') {
+			playAudio(current_practice_state?.current_item?.audio || '');
+		}
 	};
 
 	/**
@@ -166,42 +176,39 @@
 
 {#await loaded_data}
 	<div class="back-box">
-		<ButtonSkeleton
-		></ButtonSkeleton>
+		<ButtonSkeleton></ButtonSkeleton>
 	</div>
-    <div class="start-box">
-        <div class="inner">
-            <SkeletonText />
-            <TabsSkeleton>
-                <Tab label="Listening" />
-                <Tab label="Reading" />
-                <Tab label="Writing" />
-            </TabsSkeleton>
-            <p>Questions:</p>
-            <TabsSkeleton>
-                <Tab label="5" />
-                <Tab label="10" />
-                <Tab label="20" />
-                <Tab label="50" />
-                <Tab label="∞" />
-            </TabsSkeleton>
-            <div class="small-padding"></div>
-            <ButtonSkeleton
-            ></ButtonSkeleton>
-        </div>
-    </div>
+	<div class="start-box">
+		<div class="inner">
+			<SkeletonText />
+			<TabsSkeleton>
+				<Tab label="Listening" />
+				<Tab label="Reading" />
+				<Tab label="Writing" />
+			</TabsSkeleton>
+			<p>Questions:</p>
+			<TabsSkeleton>
+				<Tab label="5" />
+				<Tab label="10" />
+				<Tab label="20" />
+				<Tab label="50" />
+				<Tab label="∞" />
+			</TabsSkeleton>
+			<div class="small-padding"></div>
+			<ButtonSkeleton></ButtonSkeleton>
+		</div>
+	</div>
 
-    <div class="word-list">
-        <DataTableSkeleton
-            headers={[
-                { key: 'word', value: 'Word' },
-                { key: 'kana', value: 'Kana' },
-                { key: 'audio', value: 'Audio' }
-            ]}
-            rows={30}
-        >
-        </DataTableSkeleton>
-    </div>
+	<div class="word-list">
+		<DataTableSkeleton
+			headers={[
+				{ key: 'word', value: 'Word' },
+				{ key: 'kana', value: 'Kana' },
+				{ key: 'audio', value: 'Audio' }
+			]}
+			rows={30}
+		></DataTableSkeleton>
+	</div>
 {:then got_data}
 	<div class="back-box">
 		<Button
@@ -288,13 +295,15 @@
 		</div>
 		<div class="bottom-bar">
 			<div class="bottom-bar-text-area">
-				<TextInput light placeholder="Enter answer" on:keydown={
-                    (event) => {
-                        if (event.code == "Enter") {
-                            practiceStateNext();
-                        }
-                    }
-                } />
+				<TextInput
+					light
+					placeholder="Enter answer"
+					on:keydown={(event) => {
+						if (event.code == 'Enter') {
+							practiceStateNext();
+						}
+					}}
+				/>
 			</div>
 		</div>
 	{/if}

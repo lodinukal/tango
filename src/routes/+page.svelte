@@ -7,7 +7,7 @@
 
 	const presets = available.map((entry) => {
 		return {
-            id: entry,
+			id: entry[0],
 			name: entry
 		};
 	});
@@ -15,19 +15,19 @@
 
 <h3>Available lists:</h3>
 <li>
-    <DataTable
-        headers={[
-            {
-                key: 'name',
-                value: 'Name'
-            }
-        ]}
-        rows={presets}
-    > 
-    <svelte:fragment slot="cell" let:row let:cell>
-        {#if cell.key === 'name'}
-            <Link href="/do/{cell.value}">{cell.value}</Link>
-        {/if}
-    </svelte:fragment>
-</DataTable>
+	<DataTable
+		headers={[
+			{
+				key: 'name',
+				value: 'Name'
+			}
+		]}
+		rows={presets}
+	>
+		<svelte:fragment slot="cell" let:row let:cell>
+			{#if cell.key === 'name'}
+				<Link href="/do/{cell.value[0]}">{cell.value[1]}</Link>
+			{/if}
+		</svelte:fragment>
+	</DataTable>
 </li>
