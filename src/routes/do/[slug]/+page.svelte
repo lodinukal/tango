@@ -171,10 +171,6 @@
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
 	};
-
-	const isLimited = () => {
-		return current_count_number != null;
-	};
 </script>
 
 <LocalStorage key="count_chosen" bind:value={current_count} />
