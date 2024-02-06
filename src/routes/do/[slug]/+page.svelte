@@ -9,7 +9,9 @@
 		DataTableSkeleton,
 		TabsSkeleton,
 		ButtonSkeleton,
-		SkeletonText
+		SkeletonText,
+		LocalStorage,
+		ProgressBar
 	} from 'carbon-components-svelte';
 	import { Play, Rocket, ArrowLeft, Music } from 'carbon-icons-svelte';
 	/**
@@ -105,23 +107,20 @@
 		UNLIMITED: 4
 	};
 
+	/**
+	 * @type {{[key: number]: number?}}
+	 */
+	const count_num_mapping = {
+		0: 5,
+		1: 10,
+		2: 20,
+		3: 50,
+		4: null
+	};
+
 	let current_mode = MODE.VIEWING;
 	let current_count = COUNT.UNLIMITED;
-	let current_count_number = (() => {
-		switch (current_count) {
-			case COUNT.FIVE:
-				return 5;
-			case COUNT.TEN:
-				return 10;
-			case COUNT.TWENTY:
-				return 20;
-			case COUNT.FIFTY:
-				return 50;
-			case COUNT.UNLIMITED:
-				return -1;
-		}
-		return 0;
-	})();
+	$: current_count_number = count_num_mapping[current_count];
 
 	const finishPractice = () => {
 		current_mode = MODE.VIEWING;
@@ -163,7 +162,7 @@
 	const startPracticeState = (data) => {
 		current_practice_state = {
 			current_question: 0,
-			max_questions: current_count_number > 0 ? current_count_number : null,
+			max_questions: current_count_number,
 			correct: 0,
 			incorrect: 0,
 			current_item: null,
@@ -172,7 +171,14 @@
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
 	};
+
+	const isLimited = () => {
+		return current_count_number != null;
+	};
 </script>
+
+<LocalStorage key="count_chosen" bind:value={current_count} />
+<LocalStorage key="mode_chosen" bind:value={selected_mode} />
 
 {#await loaded_data}
 	<div class="back-box">
@@ -275,7 +281,15 @@
 			</DataTable>
 		</div>
 	{:else}
-		<div class="top-bar"></div>
+		<div class="top-bar">
+			{#if current_practice_state?.max_questions}
+				<ProgressBar
+					hideLabel
+					max={current_practice_state?.max_questions}
+					value={current_practice_state?.current_question}
+				/>
+			{/if}
+		</div>
 		<div class="mid-content-frame">
 			<div class="mid-content-frame-child">
 				{#if selected_mode_name == 'Listening'}
