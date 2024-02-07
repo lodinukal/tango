@@ -148,6 +148,7 @@
 	/**
 	 * @typedef PracticeState
 	 * @property {number} current_question
+	 * @property {number} done_questions
 	 * @property {number?} max_questions
 	 * @property {number} correct
 	 * @property {number} incorrect
@@ -201,12 +202,11 @@
 	const practiceStateNext = () => {
 		if (current_practice_state == null) return;
 		current_practice_state.tries_left = 3;
+		current_practice_state.done_questions += 1;
 
-		// play audio for non-listening modes after we have the next question
-		if (selected_mode_name != 'listening') {
-			if (current_practice_state.current_item != null) {
-				playAudio(current_practice_state?.current_item?.audio || '', true);
-			}
+		if (current_practice_state.max_questions && current_practice_state.done_questions > current_practice_state.max_questions) {
+			finishPractice();
+			return;
 		}
 
 		const use_question = lookForNextQuestion();
@@ -225,9 +225,7 @@
 				.split(';')
 				.map((s) => s.trim());
 		}
-		if (selected_mode_name == 'listening') {
-			playAudio(current_practice_state?.current_item?.audio || '', true);
-		}
+		playAudio(current_practice_state?.current_item?.audio || '', true);
 		current_learn_progress = getCurrentLearnProgress();
 	};
 
@@ -237,6 +235,7 @@
 	const startPracticeState = (data) => {
 		current_practice_state = {
 			current_question: 0,
+			done_questions: 0,
 			max_questions: current_count_number,
 			correct: 0,
 			incorrect: 0,
@@ -583,7 +582,7 @@
 				<ProgressBar
 					hideLabel
 					max={current_practice_state?.max_questions}
-					value={current_practice_state?.current_question}
+					value={current_practice_state?.done_questions - 1}
 				/>
 			{/if}
 		</div>
@@ -596,7 +595,13 @@
 						on:click={() => playAudio(current_practice_state?.current_item?.audio || '', false)}
 					/>
 				{:else}
-					<p class="mid-content-text">
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+					<p class="mid-content-text" on:click={
+						() => {
+							playAudio(current_practice_state?.current_item?.audio || '', false);
+						}
+					}>
 						{selected_mode_name == 'writing'
 							? current_practice_state?.current_item?.word || '?'
 							: current_practice_state?.current_item?.kana || '?'}
@@ -618,10 +623,9 @@
 				<TextInput
 					light
 					placeholder="Enter answer"
-					disabled={locked}
 					bind:value={text_input}
 					on:keydown={(event) => {
-						if (event.key == 'Enter') {
+						if (event.key == 'Enter' && !locked) {
 							const correctness = getCorrectnessCurrentAnswer(text_input);
 							const correct = getCorrectnessCurrentAnswerFull(text_input);
 
