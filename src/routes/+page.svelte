@@ -1,6 +1,6 @@
 <script>
 	import { DataTable, Button, Link, Tabs, Tab, TextInput } from 'carbon-components-svelte';
-	import { Play, Rocket, ArrowLeft, Music } from 'carbon-icons-svelte';
+	import { Pen } from 'carbon-icons-svelte';
 
 	import 'carbon-components-svelte/css/g100.css';
 	import available from '$lib/available.json';
@@ -13,8 +13,20 @@
 	});
 </script>
 
-<h3>Available lists:</h3>
-<li>
+<div class="content">
+	<p>Make your own</p>
+	<br />
+	<Button
+		iconDescription={'Create new list'}
+		icon={Pen}
+		on:click={() => {
+			window.location.href = '/edit';
+		}}
+	/>
+	<br />
+	<br />
+	<p>Or choose from the available lists:</p>
+	<br />
 	<DataTable
 		headers={[
 			{
@@ -30,4 +42,11 @@
 			{/if}
 		</svelte:fragment>
 	</DataTable>
-</li>
+</div>
+
+<style>
+	.content {
+		padding-left: 20px;
+		padding-top: 20px;
+	}
+</style>

@@ -11,7 +11,12 @@
 		ButtonSkeleton,
 		SkeletonText,
 		LocalStorage,
-		ProgressBar
+		ProgressBar,
+		Checkbox,
+		ComposedModal,
+		ModalBody,
+		ModalFooter,
+		ModalHeader
 	} from 'carbon-components-svelte';
 	import { fuzzy, search } from 'fast-fuzzy';
 	import { Play, Rocket, ArrowLeft, Music, Star, StarFilled, Restart } from 'carbon-icons-svelte';
@@ -19,30 +24,19 @@
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
 	import 'carbon-components-svelte/css/g100.css';
+	import { playAudio } from '$lib/set';
+	import { createAnimationTriggerAction } from 'svelte-trigger-action';
 
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-	/**
-	 * @typedef SetData
-	 * @property {SetItem[]} items
-	 * @property {SetInfo} info
-	 */
-
-	/**
-	 * @typedef SetInfo
-	 * @property {string} name
-	 */
-
-	/**
-	 * @typedef SetItem
-	 * @property {number} id
-	 * @property {string} word
-	 * @property {string} kana
-	 * @property {string} audio
-	 * @property {string[]} examples
-	 */
 	let loaded_data = getData();
+
+	/**
+	 * @typedef {import('$lib/set').SetData} SetData
+	 * @typedef {import('$lib/set').SetItem} SetItem
+	 *
+	 */
 
 	/**
 	 * @returns {Promise<SetData>}
@@ -58,21 +52,6 @@
 				alert(`Failed to load set data: ${e}`);
 			});
 	}
-
-	const audioElement = new Audio();
-
-	/**
-	 * @param {string} audio
-	 * @param {boolean} must
-	 */
-	const playAudio = async (audio, must) => {
-		if (!audioElement.paused && !must) {
-			return;
-		}
-		audioElement.src = audio;
-		audioElement.load();
-		audioElement.play();
-	};
 
 	let selected_mode = 1;
 	/**
@@ -139,6 +118,8 @@
 	 * @property {number} incorrect
 	 * @property {SetItem?} current_item
 	 * @property {SetItem[]} data
+	 * @property {number} tries_left
+	 * @property {string[]} valid_answers
 	 */
 
 	/**
@@ -176,7 +157,7 @@
 		});
 		console.log(need_to_practice);
 		if (need_to_practice.length > 0) {
-			return need_to_practice[Math.floor(Math.random() * need_to_practice.length)]
+			return need_to_practice[Math.floor(Math.random() * need_to_practice.length)];
 		}
 		// all are 3 stars
 		return null;
@@ -184,6 +165,7 @@
 
 	const practiceStateNext = () => {
 		if (current_practice_state == null) return;
+		current_practice_state.tries_left = 3;
 
 		// play audio for non-listening modes after we have the next question
 		if (selected_mode_name != 'listening') {
@@ -198,6 +180,16 @@
 			return;
 		}
 		current_practice_state.current_item = current_practice_state.data[use_question];
+
+		if (selected_mode_name == 'writing') {
+			current_practice_state.valid_answers = current_practice_state.current_item.kana
+				.split(';')
+				.map((s) => s.trim());
+		} else {
+			current_practice_state.valid_answers = current_practice_state.current_item.word
+				.split(';')
+				.map((s) => s.trim());
+		}
 		if (selected_mode_name == 'listening') {
 			playAudio(current_practice_state?.current_item?.audio || '', true);
 		}
@@ -214,7 +206,9 @@
 			correct: 0,
 			incorrect: 0,
 			current_item: null,
-			data: data
+			data: data,
+			tries_left: 3,
+			valid_answers: []
 		};
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
@@ -256,7 +250,7 @@
 		progress.progress_listening[id] = {
 			id: id,
 			learn_stars: correct ? old_learn_stars + 1 : 0,
-			last_practiced: getNow(),
+			last_practiced: getNow()
 		};
 		progress = { ...progress };
 	};
@@ -270,7 +264,7 @@
 		progress.progress_reading[id] = {
 			id: id,
 			learn_stars: correct ? old_learn_stars + 1 : 0,
-			last_practiced: getNow(),
+			last_practiced: getNow()
 		};
 		progress = { ...progress };
 	};
@@ -284,7 +278,7 @@
 		progress.progress_writing[id] = {
 			id: id,
 			learn_stars: correct ? old_learn_stars + 1 : 0,
-			last_practiced: getNow(),
+			last_practiced: getNow()
 		};
 		progress = { ...progress };
 	};
@@ -321,6 +315,23 @@
 			current_practice_state.incorrect++;
 			updateProgressFor(current_practice_state.current_item.id, is_correct, selected_mode_name);
 		}
+	};
+
+	/**
+	 * @param {boolean} correct
+	 */
+	const goNext = (correct) => {
+		markCurrent(correct);
+		if (correct) {
+			result_player_correct.play();
+		} else {
+		}
+		locked = true;
+		setTimeout(() => {
+			text_input = '';
+			practiceStateNext();
+			locked = false;
+		}, 1000);
 	};
 
 	/**
@@ -362,36 +373,57 @@
 
 	let text_input = '';
 
-	const getCorrectnessCurrentAnswer = () => {
-		if (current_practice_state == null) return;
-		if (current_practice_state.current_item == null) return;
-		let comp_to = [];
-		if (selected_mode_name == 'writing') {
-			comp_to = current_practice_state.current_item.kana.split(';').map((s) => s.trim());
-		} else {
-			comp_to = current_practice_state.current_item.word.split(';').map((s) => s.trim());
-		}
-		console.log(comp_to, text_input);
+	/**
+	 * @param {string} answer
+	 */
+	const getCorrectnessCurrentAnswer = (answer) => {
+		if (current_practice_state == null) return 0.0;
+		if (current_practice_state.current_item == null) return 0.0;
+
 		let maximum = 0;
-		comp_to.forEach((i) => {
-			const score = fuzzy(i, text_input, {
+		current_practice_state.valid_answers.forEach((i) => {
+			const score = fuzzy(i, answer, {
 				ignoreSymbols: true,
-				ignoreCase: true,
+				ignoreCase: true
 			});
 			if (score > maximum) {
 				maximum = score;
 			}
 		});
-		return maximum == 1.0;
+		return maximum;
 	};
+
+	/**
+	 * @param {string} answer
+	 */
+	const getCorrectnessCurrentAnswerFull = (answer) => {
+		if (current_practice_state == null) return false;
+		if (current_practice_state.current_item == null) return false;
+
+		let correct = false;
+		current_practice_state.valid_answers.forEach((i) => {
+			if (i == answer) {
+				correct = true;
+			}
+		});
+		return correct;
+	};
+
+	const { triggerAnimation: triggerShake, animationAction: shakeAction } =
+		createAnimationTriggerAction();
+
+	let locked = false;
+
+	let result_player_correct = new Audio('/sounds/correct.mp3');
+	result_player_correct.volume = 0.5;
+	let result_player_incorrect = new Audio(); // '/sounds/incorrect.mp3'
+
+	let incorrect_modal_open = false;
 </script>
 
 <LocalStorage key="count_chosen" bind:value={current_count} />
 <LocalStorage key="mode_chosen" bind:value={selected_mode} />
-<LocalStorage
-	key={`tango_progress_set_id_${data.slug}`}
-	bind:value={progress}
-/>
+<LocalStorage key={`tango_progress_set_id_${data.slug}`} bind:value={progress} />
 
 {#await loaded_data}
 	<div class="back-box">
@@ -519,7 +551,7 @@
 				/>
 			{/if}
 		</div>
-		<div class="mid-content-frame">
+		<div class="mid-content-frame" use:shakeAction>
 			<div class="mid-content-frame-child">
 				{#if selected_mode_name == 'listening'}
 					<Button
@@ -546,20 +578,32 @@
 					{/if}
 				{/each}
 			</div>
-			<div class="bottom-bar-text-area">
+			<div class="bottom-bar-text-area" use:shakeAction>
 				<TextInput
 					light
 					placeholder="Enter answer"
+					disabled={locked}
 					bind:value={text_input}
 					on:keydown={(event) => {
-						if (event.code == 'Enter') {
-							const correct = getCorrectnessCurrentAnswer() || false;
-							markCurrent(correct);
+						if (event.key == 'Enter') {
+							const correctness = getCorrectnessCurrentAnswer(text_input);
+							const correct = getCorrectnessCurrentAnswerFull(text_input);
+
 							if (correct) {
-								practiceStateNext();
-								text_input = '';
+								goNext(true);
 							} else {
-								alert('Incorrect answer');
+								if (correctness < 0.8) {
+									incorrect_modal_open = true;
+								} else if (current_practice_state != null) {
+									current_practice_state.tries_left -= 1;
+									console.log(current_practice_state.tries_left);
+									if (current_practice_state.tries_left == 0) {
+										incorrect_modal_open = true;
+										// goNext(false);
+									}
+									
+									triggerShake('shake');
+								} 
 							}
 						}
 					}}
@@ -570,6 +614,38 @@
 {:catch error}
 	<p>error: {error.message}</p>
 {/await}
+
+<ComposedModal
+	open={incorrect_modal_open}
+	preventCloseOnClickOutside
+	on:click:button--primary={() => {
+		incorrect_modal_open = false;
+		goNext(false);
+	}}
+>
+	<ModalHeader title="Incorrect answer" />
+	<ModalBody>
+		<p>
+			Valid Answers are: {current_practice_state?.valid_answers || 'this isnt supposed to happen'}
+		</p>
+		<br />
+		<TextInput bind:value={text_input} on:keydown={
+			(e) => {
+				if (e.key == 'Enter') {
+					if (getCorrectnessCurrentAnswerFull(text_input))
+					{
+						incorrect_modal_open = false;
+						goNext(false);
+					}
+				}
+			}
+		} />
+	</ModalBody>
+	<ModalFooter
+		primaryButtonText="Next"
+		primaryButtonDisabled={getCorrectnessCurrentAnswerFull(text_input) == false}
+	/>
+</ComposedModal>
 
 <style>
 	.top-bar {
@@ -678,6 +754,36 @@
 		.word-list {
 			width: 100%;
 			position: relative;
+		}
+	}
+
+	:global(.shake) {
+		animation: shake 1s;
+		transform: translate3d(0, 0, 0);
+		backface-visibility: hidden;
+		perspective: 1000px;
+	}
+
+	@keyframes shake {
+		10%,
+		90% {
+			transform: translate3d(-1px, 0, 0);
+		}
+
+		20%,
+		80% {
+			transform: translate3d(2px, 0, 0);
+		}
+
+		30%,
+		50%,
+		70% {
+			transform: translate3d(-4px, 0, 0);
+		}
+
+		40%,
+		60% {
+			transform: translate3d(4px, 0, 0);
 		}
 	}
 </style>

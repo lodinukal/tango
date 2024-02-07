@@ -31,6 +31,7 @@
 	"type": "module",
 	"dependencies": {
 		"fast-fuzzy": "^1.12.0",
+		"svelte-trigger-action": "^1.17.0",
 		"vercel": "^33.4.1"
 	}
 }
