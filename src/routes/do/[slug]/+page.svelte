@@ -168,6 +168,10 @@
 		});
 		// need to practice ones
 		const need_to_practice = current_set_ids.filter((i) => {
+			// check if it has audio
+			if (selected_mode_name == 'listening' && current_set[i]?.audio == '') {
+				return false;
+			}
 			return (current_set_progress[i]?.learn_stars || 0) < 3;
 		});
 		console.log(need_to_practice);
