@@ -361,19 +361,24 @@
 	const getCorrectnessCurrentAnswer = () => {
 		if (current_practice_state == null) return;
 		if (current_practice_state.current_item == null) return;
-		let comp_to = '';
+		let comp_to = [];
 		if (selected_mode_name == 'writing') {
-			comp_to = current_practice_state.current_item.kana;
+			comp_to = current_practice_state.current_item.kana.split(';').map((s) => s.trim());
 		} else {
-			comp_to = current_practice_state.current_item.word;
+			comp_to = current_practice_state.current_item.word.split(';').map((s) => s.trim());
 		}
 		console.log(comp_to, text_input);
-		return (
-			fuzzy(comp_to, text_input, {
+		let maximum = 0;
+		comp_to.forEach((i) => {
+			const score = fuzzy(i, text_input, {
+				ignoreSymbols: true,
 				ignoreCase: true,
-				ignoreSymbols: true
-			}) == 1.0
-		);
+			});
+			if (score > maximum) {
+				maximum = score;
+			}
+		});
+		return maximum == 1.0;
 	};
 </script>
 
