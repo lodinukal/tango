@@ -82,7 +82,7 @@
 						};
 					}
 					edit_data.info.name = e.detail?.toString() || '';
-					edit_data = { ...edit_data };
+                    save();
 				}}
 			/>
 			<br />
@@ -175,7 +175,8 @@
 					on:click={() => playAudio(cell.value, false)}
 					icon={Play}
 					disabled={cell.value == ''}
-					iconDescription="Play"
+                    tooltipPosition="right"
+                    iconDescription="Play"
 				/>
 			{:else}
 				{cell.value}

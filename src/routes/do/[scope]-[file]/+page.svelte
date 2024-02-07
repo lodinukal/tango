@@ -559,6 +559,7 @@
 								on:click={() => playAudio(cell.value, false)}
 								icon={Play}
 								disabled={cell.value == ''}
+								tooltipPosition="right"
 								iconDescription="Play"
 							/>
 						{:else if cell.key === 'progress'}
