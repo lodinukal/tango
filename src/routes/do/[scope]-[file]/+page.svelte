@@ -38,25 +38,22 @@
 	 *
 	 */
 
-
 	/**
 	 * @returns {Promise<SetData>}
 	 */
 	async function getData() {
 		const scope = data.scope;
 		const url_params = new URLSearchParams(window.location.search);
-		if (scope == 'local')
-		{
+		if (scope == 'local') {
 			/**
 			 * @type {import('$lib/set').LocalList[]}
 			 */
-			let local_lists = JSON.parse(localStorage.getItem('local_lists') || "");
+			let local_lists = JSON.parse(localStorage.getItem('local_lists') || '');
 			const found = local_lists.find((i) => i.id == data.file);
 			if (found != undefined) {
 				return JSON.parse(found.json);
 			}
-		} else if (scope == 'preset')
-		{
+		} else if (scope == 'preset') {
 			const got_data = await fetch(`/sets/${data.file}.json`);
 			return got_data
 				.json()
@@ -66,8 +63,7 @@
 				.catch((e) => {
 					alert(`Failed to load set data: ${e}`);
 				});
-		} else if (scope == 'link')
-		{
+		} else if (scope == 'link') {
 			const link = url_params.get('to') || '';
 			const got_data = await fetch(link);
 			return got_data
@@ -78,7 +74,6 @@
 				.catch((e) => {
 					alert(`Failed to load set data: ${e}`);
 				});
-		
 		}
 		return {
 			info: {
@@ -164,6 +159,25 @@
 	let current_practice_state = null;
 
 	/**
+	 * @type {number[]}
+	 */
+	let current_pool = [];
+	const max_in_pool = 10;
+
+	/**
+	 * @param {number} id
+	 */
+	const ableToPracticeId = (id) => {
+		if (current_practice_state == null) return false;
+		if (current_practice_state.data == null) return false;
+		if (current_practice_state.data.length == 0) return false;
+		const found = current_practice_state.data.find((i) => i.id == id);
+		if (found == undefined) return false;
+		const current_set_progress = getLearnProgressSet(selected_mode_name);
+		return current_set_progress[id]?.learn_stars < 3;
+	};
+
+	/**
 	 * @returns {?number}
 	 */
 	const lookForNextQuestion = () => {
@@ -204,16 +218,37 @@
 		current_practice_state.tries_left = 3;
 		current_practice_state.done_questions += 1;
 
-		if (current_practice_state.max_questions && current_practice_state.done_questions > current_practice_state.max_questions) {
+		if (selected_mode_name == 'writing') {
+			const audio = current_practice_state?.current_item?.audio;
+			if (audio) playAudio(audio, true);
+		}
+
+		if (
+			current_practice_state.max_questions &&
+			current_practice_state.done_questions > current_practice_state.max_questions
+		) {
 			finishPractice();
 			return;
 		}
 
-		const use_question = lookForNextQuestion();
-		if (use_question == null) {
+		while (current_pool.length < max_in_pool) {
+			const use_question = lookForNextQuestion();
+			if (use_question != null && !current_pool.includes(use_question)) {
+				current_pool.push(use_question);
+			} else {
+				break;
+			}
+		}
+
+		current_pool.filter((i) => {
+			return ableToPracticeId(i);
+		});
+
+		if (current_pool.length == 0) {
 			finishPractice();
 			return;
 		}
+		const use_question = current_pool[Math.floor(Math.random() * current_pool.length)];
 		current_practice_state.current_item = current_practice_state.data[use_question];
 
 		if (selected_mode_name == 'writing') {
@@ -225,7 +260,9 @@
 				.split(';')
 				.map((s) => s.trim());
 		}
-		playAudio(current_practice_state?.current_item?.audio || '', true);
+		if (selected_mode_name != 'writing') {
+			playAudio(current_practice_state?.current_item?.audio || '', true);
+		}
 		current_learn_progress = getCurrentLearnProgress();
 	};
 
@@ -244,6 +281,7 @@
 			tries_left: 3,
 			valid_answers: []
 		};
+		current_pool = [];
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
 	};
@@ -597,11 +635,13 @@
 				{:else}
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-					<p class="mid-content-text" on:click={
-						() => {
-							playAudio(current_practice_state?.current_item?.audio || '', false);
-						}
-					}>
+					<p
+						class="mid-content-text"
+						on:click={() => {
+							if (selected_mode_name != 'writing')
+								playAudio(current_practice_state?.current_item?.audio || '', false);
+						}}
+					>
 						{selected_mode_name == 'writing'
 							? current_practice_state?.current_item?.word || '?'
 							: current_practice_state?.current_item?.kana || '?'}
@@ -641,9 +681,9 @@
 										incorrect_modal_open = true;
 										// goNext(false);
 									}
-									
+
 									triggerShake('shake');
-								} 
+								}
 							}
 						}
 					}}
@@ -669,17 +709,17 @@
 			Valid Answers are: {current_practice_state?.valid_answers || 'this isnt supposed to happen'}
 		</p>
 		<br />
-		<TextInput bind:value={text_input} on:keydown={
-			(e) => {
+		<TextInput
+			bind:value={text_input}
+			on:keydown={(e) => {
 				if (e.key == 'Enter') {
-					if (getCorrectnessCurrentAnswerFull(text_input))
-					{
+					if (getCorrectnessCurrentAnswerFull(text_input)) {
 						incorrect_modal_open = false;
 						goNext(false);
 					}
 				}
-			}
-		} />
+			}}
+		/>
 	</ModalBody>
 	<ModalFooter
 		primaryButtonText="Next"
