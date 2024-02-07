@@ -1,5 +1,6 @@
 export const load = ({ params }) => {
 	return {
-		slug: params.slug
+		scope: params.scope,
+		file: params.file,
 	};
 };

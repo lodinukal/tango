@@ -38,19 +38,54 @@
 	 *
 	 */
 
+
 	/**
 	 * @returns {Promise<SetData>}
 	 */
 	async function getData() {
-		const got_data = await fetch(`/sets/${data.slug}.json`);
-		return got_data
-			.json()
-			.then((d) => {
-				return d;
-			})
-			.catch((e) => {
-				alert(`Failed to load set data: ${e}`);
-			});
+		const scope = data.scope;
+		const url_params = new URLSearchParams(window.location.search);
+		if (scope == 'local')
+		{
+			/**
+			 * @type {import('$lib/set').LocalList[]}
+			 */
+			let local_lists = JSON.parse(localStorage.getItem('local_lists') || "");
+			const found = local_lists.find((i) => i.id == data.file);
+			if (found != undefined) {
+				return JSON.parse(found.json);
+			}
+		} else if (scope == 'preset')
+		{
+			const got_data = await fetch(`/sets/${data.file}.json`);
+			return got_data
+				.json()
+				.then((d) => {
+					return d;
+				})
+				.catch((e) => {
+					alert(`Failed to load set data: ${e}`);
+				});
+		} else if (scope == 'link')
+		{
+			const link = url_params.get('to') || '';
+			const got_data = await fetch(link);
+			return got_data
+				.json()
+				.then((d) => {
+					return d;
+				})
+				.catch((e) => {
+					alert(`Failed to load set data: ${e}`);
+				});
+		
+		}
+		return {
+			info: {
+				name: 'Untitled set'
+			},
+			items: []
+		};
 	}
 
 	let selected_mode = 1;
@@ -423,7 +458,7 @@
 
 <LocalStorage key="count_chosen" bind:value={current_count} />
 <LocalStorage key="mode_chosen" bind:value={selected_mode} />
-<LocalStorage key={`tango_progress_set_id_${data.slug}`} bind:value={progress} />
+<LocalStorage key={`tango_progress_set_scope${data.scope}_id_${data.file}`} bind:value={progress} />
 
 {#await loaded_data}
 	<div class="back-box">

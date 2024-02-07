@@ -21,6 +21,12 @@
 let audio_player = new Audio();
 
 /**
+ * @typedef LocalList
+ * @prop {string} id
+ * @prop {string} json
+ */
+
+/**
  * @param {string} audio
  * @param {boolean} must
  */

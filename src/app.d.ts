@@ -5,7 +5,8 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		interface PageData {
-			slug: string,
+			scope: string,
+			file: string,
 		}
 		// interface PageState {}
 		// interface Platform {}
