@@ -146,6 +146,38 @@
 	 */
 	let current_practice_state = null;
 
+	/**
+	 * @returns {?number}
+	 */
+	const lookForNextQuestion = () => {
+		if (current_practice_state == null) return null;
+		const current_set_progress = getLearnProgressSet(selected_mode_name);
+		const current_set = current_practice_state.data;
+		const current_set_ids = current_set.map((i) => i.id);
+		current_set_ids.sort((a, b) => {
+			const a_last = current_set_progress[a]?.last_practiced || '1970-01-01T00:00:00.000Z';
+			const b_last = current_set_progress[b]?.last_practiced || '1970-01-01T00:00:00.000Z';
+			const a_prog = current_set_progress[a]?.learn_stars || 0;
+			const b_prog = current_set_progress[b]?.learn_stars || 0;
+			const a_date = new Date(a_last);
+			const b_date = new Date(b_last);
+			if (a_prog != b_prog) {
+				return a_prog - b_prog;
+			}
+			return a_date.getSeconds() - b_date.getSeconds();
+		});
+		// need to practice ones
+		const need_to_practice = current_set_ids.filter((i) => {
+			return (current_set_progress[i]?.learn_stars || 0) < 3;
+		});
+		console.log(need_to_practice);
+		if (need_to_practice.length > 0) {
+			return need_to_practice[Math.floor(Math.random() * need_to_practice.length)]
+		}
+		// all are 3 stars
+		return null;
+	};
+
 	const practiceStateNext = () => {
 		if (current_practice_state == null) return;
 
@@ -156,10 +188,8 @@
 			}
 		}
 
-		const use_question = current_practice_state.current_question;
-		const max_questions = current_practice_state.max_questions;
-		current_practice_state.current_question++;
-		if (max_questions && use_question >= max_questions) {
+		const use_question = lookForNextQuestion();
+		if (use_question == null) {
 			finishPractice();
 			return;
 		}
@@ -190,6 +220,7 @@
 	 * @typedef SetItemProgress
 	 * @property {number} id
 	 * @property {number} learn_stars
+	 * @property {string} last_practiced
 	 */
 
 	/**
@@ -208,6 +239,10 @@
 		progress_writing: {}
 	};
 
+	const getNow = () => {
+		return new Date().toISOString();
+	};
+
 	/**
 	 * @param {number} id
 	 * @param {boolean} correct
@@ -216,7 +251,8 @@
 		const old_learn_stars = progress.progress_listening[id]?.learn_stars || 0;
 		progress.progress_listening[id] = {
 			id: id,
-			learn_stars: correct ? old_learn_stars + 1 : 0
+			learn_stars: correct ? old_learn_stars + 1 : 0,
+			last_practiced: getNow(),
 		};
 		progress = { ...progress };
 	};
@@ -229,7 +265,8 @@
 		const old_learn_stars = progress.progress_reading[id]?.learn_stars || 0;
 		progress.progress_reading[id] = {
 			id: id,
-			learn_stars: correct ? old_learn_stars + 1 : 0
+			learn_stars: correct ? old_learn_stars + 1 : 0,
+			last_practiced: getNow(),
 		};
 		progress = { ...progress };
 	};
@@ -242,7 +279,8 @@
 		const old_learn_stars = progress.progress_writing[id]?.learn_stars || 0;
 		progress.progress_writing[id] = {
 			id: id,
-			learn_stars: correct ? old_learn_stars + 1 : 0
+			learn_stars: correct ? old_learn_stars + 1 : 0,
+			last_practiced: getNow(),
 		};
 		progress = { ...progress };
 	};
@@ -282,17 +320,24 @@
 	};
 
 	/**
+	 * @param {"reading"|"listening"|"writing"} mode
+	 */
+	const getLearnProgressSet = (mode) => {
+		switch (mode) {
+			case 'reading':
+				return progress.progress_reading;
+			case 'listening':
+				return progress.progress_listening;
+			case 'writing':
+				return progress.progress_writing;
+		}
+	};
+
+	/**
 	 * @param {number} id
 	 */
 	const getLearnProgressSameMode = (id) => {
-		switch (selected_mode_name) {
-			case 'reading':
-				return progress.progress_reading[id];
-			case 'listening':
-				return progress.progress_listening[id];
-			case 'writing':
-				return progress.progress_writing[id];
-		}
+		return getLearnProgressSet(selected_mode_name)[id];
 	};
 
 	const getCurrentLearnProgress = () => {
@@ -308,6 +353,7 @@
 			progress_reading: {},
 			progress_writing: {}
 		};
+		selected_mode = selected_mode;
 	};
 
 	let text_input = '';
@@ -336,9 +382,6 @@
 <LocalStorage
 	key={`tango_progress_set_id_${data.slug}`}
 	bind:value={progress}
-	on:update={(e) => {
-		console.log('progress updated', e);
-	}}
 />
 
 {#await loaded_data}
