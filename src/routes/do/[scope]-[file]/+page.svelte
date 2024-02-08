@@ -159,25 +159,6 @@
 	let current_practice_state = null;
 
 	/**
-	 * @type {number[]}
-	 */
-	let current_pool = [];
-	const max_in_pool = 10;
-
-	/**
-	 * @param {number} id
-	 */
-	const ableToPracticeId = (id) => {
-		if (current_practice_state == null) return false;
-		if (current_practice_state.data == null) return false;
-		if (current_practice_state.data.length == 0) return false;
-		const found = current_practice_state.data.find((i) => i.id == id);
-		if (found == undefined) return false;
-		const current_set_progress = getLearnProgressSet(selected_mode_name);
-		return current_set_progress[id]?.learn_stars < 3;
-	};
-
-	/**
 	 * @returns {?number}
 	 */
 	const lookForNextQuestion = () => {
@@ -205,7 +186,6 @@
 			}
 			return (current_set_progress[i]?.learn_stars || 0) < 3;
 		});
-		console.log(need_to_practice);
 		if (need_to_practice.length > 0) {
 			return need_to_practice[Math.floor(Math.random() * need_to_practice.length)];
 		}
@@ -231,24 +211,12 @@
 			return;
 		}
 
-		while (current_pool.length < max_in_pool) {
-			const use_question = lookForNextQuestion();
-			if (use_question != null && !current_pool.includes(use_question)) {
-				current_pool.push(use_question);
-			} else {
-				break;
-			}
-		}
-
-		current_pool.filter((i) => {
-			return ableToPracticeId(i);
-		});
-
-		if (current_pool.length == 0) {
+		const use_question = lookForNextQuestion();
+		if (use_question == null) {
 			finishPractice();
 			return;
 		}
-		const use_question = current_pool[Math.floor(Math.random() * current_pool.length)];
+
 		current_practice_state.current_item = current_practice_state.data[use_question];
 
 		if (selected_mode_name == 'writing') {
@@ -281,7 +249,6 @@
 			tries_left: 3,
 			valid_answers: []
 		};
-		current_pool = [];
 		practiceStateNext();
 		current_mode = MODE.PRACTICING;
 	};
@@ -393,6 +360,7 @@
 	 * @param {boolean} correct
 	 */
 	const goNext = (correct) => {
+		incorrect_modal_open = false;
 		markCurrent(correct);
 		if (correct) {
 			result_player_correct.play();
@@ -699,7 +667,6 @@
 	open={incorrect_modal_open}
 	preventCloseOnClickOutside
 	on:click:button--primary={() => {
-		incorrect_modal_open = false;
 		goNext(false);
 	}}
 >
