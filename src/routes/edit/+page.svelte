@@ -253,7 +253,7 @@
 			<br />
 			<br />
 			<FileUploaderDropContainer
-				labelText="Import list (will overwrite current list)"
+				labelText="Import list (excel or json) (will overwrite current list)"
 				accept={['.json', '.xlsx']}
 				on:change={async (e) => {
 					// set edit data to the file
