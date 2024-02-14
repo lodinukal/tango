@@ -30,6 +30,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@zerodevx/svelte-toast": "^0.9.5",
 		"fast-fuzzy": "^1.12.0",
 		"forvo": "^1.0.0",
 		"read-excel-file": "^5.7.1",

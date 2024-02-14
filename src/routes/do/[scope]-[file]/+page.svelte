@@ -16,7 +16,8 @@
 		ComposedModal,
 		ModalBody,
 		ModalFooter,
-		ModalHeader
+		ModalHeader,
+		ToastNotification
 	} from 'carbon-components-svelte';
 	import { fuzzy, search } from 'fast-fuzzy';
 	import { Play, Rocket, ArrowLeft, Music, Star, StarFilled, Restart } from 'carbon-icons-svelte';
@@ -26,6 +27,7 @@
 	import 'carbon-components-svelte/css/g100.css';
 	import { playAudio } from '$lib/set';
 	import { createAnimationTriggerAction } from 'svelte-trigger-action';
+	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 
 	/** @type {import('./$types').PageData} */
 	export let data;
@@ -363,9 +365,19 @@
 		incorrect_modal_open = false;
 		markCurrent(correct);
 		if (correct) {
+			toast.push('Correct!', {
+				theme: {
+					primary: 'green',
+					'--toastBarHeight': 0,
+					'--toastColor': 'mintcream',
+					'--toastBackground': 'rgba(72,187,120,0.9)'
+				},
+				duration: 1000
+			});
 			result_player_correct.play();
 		} else {
 		}
+
 		locked = true;
 		setTimeout(() => {
 			text_input = '';
@@ -464,6 +476,8 @@
 <LocalStorage key="count_chosen" bind:value={current_count} />
 <LocalStorage key="mode_chosen" bind:value={selected_mode} />
 <LocalStorage key={`tango_progress_set_scope${data.scope}_id_${data.file}`} bind:value={progress} />
+
+<SvelteToast />
 
 {#await loaded_data}
 	<div class="back-box">
@@ -644,10 +658,22 @@
 									incorrect_modal_open = true;
 								} else if (current_practice_state != null) {
 									current_practice_state.tries_left -= 1;
-									console.log(current_practice_state.tries_left);
 									if (current_practice_state.tries_left == 0) {
 										incorrect_modal_open = true;
 										// goNext(false);
+									} else {
+										toast.push(
+											`Incorrect! ${current_practice_state.tries_left} attempt${current_practice_state.tries_left > 1 ? 's' : ''} left.`,
+											{
+												theme: {
+													primary: 'red',
+													'--toastBarHeight': 0,
+													'--toastColor': 'persimmon',
+													'--toastBackground': 'rgba(187,72,72,0.9)'
+												},
+												duration: 1000
+											}
+										);
 									}
 
 									triggerShake('shake');
