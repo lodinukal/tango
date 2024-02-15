@@ -1,6 +1,7 @@
 <script>
 	import { playAudio } from '$lib/set';
 	import readXlsxFile from 'read-excel-file'
+
 	import {
 		Button,
 		ComposedModal,
@@ -38,6 +39,7 @@
 		SearchLocate,
 		TrashCan
 	} from 'carbon-icons-svelte';
+	import { convert } from '$lib/jp-conversion';
 
 	/**
 	 * @typedef {import('$lib/set').SetData} SetData
@@ -84,28 +86,28 @@
 		save_data = { ...edit_data };
 	};
 
-	// let current_word_search = '';
-	// /**
-	//  * @typedef Result
-	//  * @prop {number} id
-	//  * @prop {string} word
-	//  * @prop {string} pathmp3
-	//  * @prop {string} pathogg
-	//  * @prop {number} hits
-	//  * @prop {string} username
-	//  */
-	// /**
-	//  * @type {Result[]}
-	// */
-	// let found_word_results = [];
-	// let loading_results = false;
-	// const getWord = async () => {
-	// 	loading_results = true;
-	// 	found_word_results = (await (await fetch(`/api/word-get?word=${current_word_search}`)).json()).items;
-	// 	found_word_results.sort((a, b) => b.hits - a.hits);
-	// 	found_word_results = found_word_results.slice(0, 5);
-	// 	loading_results = false;
-	// }
+	let current_word_search = '';
+	/**
+	 * @typedef Result
+	 * @prop {number} id
+	 * @prop {string} word
+	 * @prop {string} pathmp3
+	 * @prop {string} pathogg
+	 * @prop {number} hits
+	 * @prop {string} username
+	 */
+	/**
+	 * @type {Result[]}
+	*/
+	let found_word_results = [];
+	let loading_results = false;
+	const getWord = async () => {
+		loading_results = true;
+		found_word_results = (await (await fetch(`/api/word-get?word=${current_word_search}`)).json()).items;
+		found_word_results.sort((a, b) => b.hits - a.hits);
+		found_word_results = found_word_results.slice(0, 5);
+		loading_results = false;
+	}
 
 	/**
 	 * @param {string} kana
@@ -152,6 +154,12 @@
 			excel_document_rows = excel_document[skip_header ? 1 : 0];
 		}
 	}
+
+	const forvo_enabled = localStorage.getItem('forvo_enabled') === 'true';
+	/**
+	 * @type {?number}
+	 */
+	let last_row_search = null;
 </script>
 
 <ComposedModal
@@ -293,48 +301,70 @@
 					empty
 				{:else}
 					<Link href={current_jp_pod_href}>{current_jp_pod_href}</Link>
+					<Button
+						on:click={() => {
+							navigator.clipboard.writeText(current_jp_pod_href);
+							if (last_row_search) {
+								edit_data.items[last_row_search].audio = current_jp_pod_href;
+								save();
+								last_row_search = null;
+								playAudio(current_jp_pod_href, false);
+							}
+						}}
+						icon={Copy}
+					/>
 				{/if}
 			</p>
 			<br />
 		</div>
-	</div>
-	<!-- <div class="util-box">
 		<div class="inner">
-			<h4>Audio search (forvo)</h4>
-			<TextInput inline labelText={'Search'} bind:value={
-				current_word_search
-			}></TextInput>
-			<br />
-			<Button icon={SearchLocate} on:click={getWord} iconDescription={'Search'}></Button>
-			<div class="x-padding"></div>
-			<Button icon={TrashCan} on:click={() => {
-				found_word_results = [];
-			}} disabled={loading_results} iconDescription={'Clear'}></Button>
-			<br>
-			{#if loading_results}
-				<p>Loading...</p>
-			{:else}
-				{#each found_word_results as fwr}
-					<div>
-						<p>{fwr.username}</p>
-						<br>
-						<Button
-							icon={Play}
-							on:click={() => playAudio(fwr.pathmp3, false)}
-							disabled={fwr.pathmp3 == ''}
-							tooltipPosition="left"
-							iconDescription="Play"
-						/>
-						<div class='x-padding'></div>
-						<Button
-							on:click={() => {}}
-							icon={Copy}
-						/>
-					</div>
-				{/each}
+			{#if forvo_enabled}
+				<h4>Audio search (forvo)</h4>
+				<TextInput inline labelText={'Search'} bind:value={
+					current_word_search
+				}></TextInput>
+				<br />
+				<Button icon={SearchLocate} on:click={getWord} iconDescription={'Search'}></Button>
+				<div class="x-padding"></div>
+				<Button icon={TrashCan} on:click={() => {
+					found_word_results = [];
+				}} disabled={loading_results} iconDescription={'Clear'}></Button>
+				<br>
+				{#if loading_results}
+					<p>Loading...</p>
+				{:else}
+					{#each found_word_results as fwr}
+						<div>
+							<br>
+							<p>{fwr.username}</p>
+							<br>
+							<Button
+								icon={Play}
+								on:click={() => playAudio(fwr.pathmp3, false)}
+								disabled={fwr.pathmp3 == ''}
+								tooltipPosition="left"
+								iconDescription="Play"
+							/>
+							<div class='x-padding'></div>
+							<Button
+								on:click={() => {
+									navigator.clipboard.writeText(fwr.pathmp3);
+									if (last_row_search) {
+										edit_data.items[last_row_search].audio = fwr.pathmp3;
+										save();
+										last_row_search = null;
+										playAudio(fwr.pathmp3, false);
+									}
+								}}
+								icon={Copy}
+							/>
+							<br>
+						</div>
+					{/each}
+				{/if}
 			{/if}
 		</div>
-	</div> -->
+	</div>
 </div>
 
 
@@ -343,7 +373,8 @@
 		headers={[
 			{ key: 'word', value: 'Word', width: '50%px' },
 			{ key: 'kana', value: 'Kana', width: '50%px' },
-			{ key: 'audio', value: 'Audio' }
+			{ key: 'audio', value: 'Audio' },
+			{ key: 'search_forvo', value: 'Search' }
 		]}
 		rows={[
 			...(edit_data.items || []),
@@ -389,6 +420,19 @@
 					tooltipPosition="right"
 					iconDescription="Play"
 				/>
+			{:else if cell.key === 'search_forvo'}
+				<Button
+					on:click={() => {
+						current_word_search = row.kana;
+						current_jp_pod_kana_search = convert(row.kana)?.hiragana || "";
+						current_jp_pod_kanji_search = convert(row.kana)?.kanji || "";
+						last_row_search = row.id;
+					}}
+					icon={SearchLocate}
+					disabled={cell.value == ''}
+					tooltipPosition="right"
+					iconDescription="Search"
+				/>
 			{:else}
 				{cell.value}
 			{/if}
@@ -403,6 +447,7 @@
 						if (edit_data == null) return;
 						edit_data.items[row.id].word = e.detail?.toString() || '';
 						edit_data = edit_data;
+						save();
 					}}
 				/>
 				<TextInput
@@ -413,6 +458,7 @@
 						if (edit_data == null) return;
 						edit_data.items[row.id].kana = e.detail?.toString() || '';
 						edit_data = edit_data;
+						save();
 					}}
 				/>
 				<TextInput
@@ -423,6 +469,7 @@
 						if (edit_data == null) return;
 						edit_data.items[row.id].audio = e.detail?.toString() || '';
 						edit_data = edit_data;
+						save();
 					}}
 				/>
 				<Button

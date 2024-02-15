@@ -33,6 +33,7 @@
 		"@zerodevx/svelte-toast": "^0.9.5",
 		"fast-fuzzy": "^1.12.0",
 		"forvo": "^1.0.0",
+		"jp-conversion": "^0.0.5",
 		"read-excel-file": "^5.7.1",
 		"svelte-trigger-action": "^1.17.0",
 		"vercel": "^33.4.1"
