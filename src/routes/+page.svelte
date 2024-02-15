@@ -12,7 +12,6 @@
 	import { Pen, TrashCan } from 'carbon-icons-svelte';
 
 	import 'carbon-components-svelte/css/g100.css';
-	import available from '$lib/available.json';
 
 	/**
 	 * @typedef {import('$lib/set').SetData} SetData
@@ -25,12 +24,23 @@
 	 */
 	let local_lists = [];
 
-	const presets = available.map((entry) => {
-		return {
-			id: entry[0],
-			name: entry
-		};
-	});
+	async function getAvailable() {
+		const res = await fetch(`/api/get-src?resource=available`);
+		const data = await res.json();
+		/**
+		 * 
+		 * @param {any} entry
+		 */
+		function mapper(entry) {
+			return {
+				id: entry[0],
+				name: entry
+			};
+		}
+		return data.map(mapper);
+	}
+
+	const presets = getAvailable();
 </script>
 
 <LocalStorage key="local_lists" bind:value={local_lists} />
@@ -49,21 +59,27 @@
 	<br />
 	<p>Or choose from the available lists:</p>
 	<br />
-	<DataTable
-		headers={[
-			{
-				key: 'name',
-				value: 'Name'
-			}
-		]}
-		rows={presets}
-	>
-		<svelte:fragment slot="cell" let:row let:cell>
-			{#if cell.key === 'name'}
-				<Link href="/do/preset-{cell.value[0]}">{cell.value[1]}</Link>
-			{/if}
-		</svelte:fragment>
-	</DataTable>
+	{#await presets}
+		loading...
+	{:then found}
+		<DataTable
+			headers={[
+				{
+					key: 'name',
+					value: 'Name'
+				}
+			]}
+			rows={found}
+		>
+			<svelte:fragment slot="cell" let:row let:cell>
+				{#if cell.key === 'name'}
+					<Link href="/do/preset-{cell.value[0]}">{cell.value[1]}</Link>
+				{/if}
+			</svelte:fragment>
+		</DataTable>
+	{:catch _}
+		<p>Failed to load available lists</p>
+	{/await}
 	<br />
 	<p>Local lists:</p>
 	<br />

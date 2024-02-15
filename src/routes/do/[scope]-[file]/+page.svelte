@@ -29,6 +29,10 @@
 	import { createAnimationTriggerAction } from 'svelte-trigger-action';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 
+	import { PUBLIC_ROOT } from '$env/static/public';
+
+	console.log(PUBLIC_ROOT);
+
 	/** @type {import('./$types').PageData} */
 	export let data;
 
@@ -56,7 +60,8 @@
 				return JSON.parse(found.json);
 			}
 		} else if (scope == 'preset') {
-			const got_data = await fetch(`/sets/${data.file}.json`);
+			// const got_data = await fetch(`/sets/${data.file}.json`);
+			const got_data = await fetch(`/api/get-src?resource=${data.file}`);
 			return got_data
 				.json()
 				.then((d) => {
@@ -554,6 +559,7 @@
 				<div class="x-padding"></div>
 				<Button iconDescription={'reset progress'} icon={Restart} on:click={() => resetProgress()}
 				></Button>
+				<div class="bit-padding"></div>
 			</div>
 		</div>
 
@@ -788,7 +794,7 @@
 	.start-box {
 		left: 0;
 		width: 300px;
-		height: 265px;
+		min-height: 265px;
 		padding-left: 20px;
 		padding-top: 20px;
 		padding-bottom: 20px;
@@ -801,6 +807,10 @@
 		background: #262626;
 		width: 100%;
 		height: 100%;
+	}
+
+	.bit-padding {
+		padding-top: 10px;
 	}
 
 	/* Split the screen in half */
