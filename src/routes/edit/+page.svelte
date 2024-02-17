@@ -1,6 +1,6 @@
 <script>
 	import { playAudio } from '$lib/set';
-	import readXlsxFile from 'read-excel-file'
+	import readXlsxFile from 'read-excel-file';
 
 	import {
 		Button,
@@ -15,21 +15,15 @@
 		StructuredListInput,
 		NumberInput,
 		TextInput,
-
 		Checkbox,
-
 		Search,
 		Link,
-
 		Theme
-
-
-
 	} from 'carbon-components-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
-	import "carbon-components-svelte/css/all.css";
+	import 'carbon-components-svelte/css/all.css';
 	import {
 		Add,
 		ArrowLeft,
@@ -101,23 +95,24 @@
 	 */
 	/**
 	 * @type {Result[]}
-	*/
+	 */
 	let found_word_results = [];
 	let loading_results = false;
 	const getWord = async () => {
 		loading_results = true;
-		found_word_results = (await (await fetch(`/api/word-get?word=${current_word_search}`)).json()).items;
+		found_word_results = (await (await fetch(`/api/word-get?word=${current_word_search}`)).json())
+			.items;
 		found_word_results.sort((a, b) => b.hits - a.hits);
 		found_word_results = found_word_results.slice(0, 5);
 		loading_results = false;
-	}
+	};
 
 	/**
 	 * @param {string} kana
 	 * @param {string} kanji
 	 */
 	const getJpPodLink = (kana, kanji) => {
-		const url = new URL("http://assets.languagepod101.com/dictionary/japanese/audiomp3.php");
+		const url = new URL('http://assets.languagepod101.com/dictionary/japanese/audiomp3.php');
 		let none = true;
 		if (kana != '') {
 			url.searchParams.append('kana', kana);
@@ -131,11 +126,11 @@
 			return '';
 		}
 		return url.href;
-	}
+	};
 
-	let current_jp_pod_kanji_search = "";
-	let current_jp_pod_kana_search = "";
-	let current_jp_pod_href = "";
+	let current_jp_pod_kanji_search = '';
+	let current_jp_pod_kana_search = '';
+	let current_jp_pod_href = '';
 	$: current_jp_pod_href = getJpPodLink(current_jp_pod_kana_search, current_jp_pod_kanji_search);
 
 	let excel_import_modal_open = false;
@@ -176,7 +171,7 @@
 			info: {
 				name: excel_document_file_name.split('.').slice(0, -1).join('.')
 			},
-			items: [],
+			items: []
 		};
 		let id = 0;
 		for (let i = skip_header ? 1 : 0; i < excel_document.length; i++) {
@@ -185,7 +180,8 @@
 				id: id++,
 				word: excel_document_word_column == 0 ? '' : row[excel_document_word_column - 1].toString(),
 				kana: excel_document_kana_column == 0 ? '' : row[excel_document_kana_column - 1].toString(),
-				audio: excel_document_audio_column == 0 ? '' : row[excel_document_audio_column - 1].toString(),
+				audio:
+					excel_document_audio_column == 0 ? '' : row[excel_document_audio_column - 1].toString(),
 				examples: []
 			});
 		}
@@ -198,13 +194,40 @@
 		<p>Leave columns at 0 to not include them</p>
 		<p>First row looks like:</p>
 		<p>{excel_document_rows.join(', ')}</p>
-		<Checkbox bind:checked={skip_header} labelText={'Skip header'} ></Checkbox>
-		<NumberInput label={'Word column'} bind:value={excel_document_word_column} min={0} max={excel_document_rows.length}></NumberInput>
-		<p>first word: {excel_document_word_column == 0 ? 'null' : excel_document_rows[excel_document_word_column - 1]}</p>
-		<NumberInput label={'Kana column'} bind:value={excel_document_kana_column} min={0} max={excel_document_rows.length}></NumberInput>
-		<p>first kana: {excel_document_kana_column == 0 ? 'null' : excel_document_rows[excel_document_kana_column - 1]}</p>
-		<NumberInput label={'Audio column'} bind:value={excel_document_audio_column} min={0} max={excel_document_rows.length}></NumberInput>
-		<p>first audio: {excel_document_audio_column == 0 ? 'null' : excel_document_rows[excel_document_audio_column - 1]}</p>
+		<Checkbox bind:checked={skip_header} labelText={'Skip header'}></Checkbox>
+		<NumberInput
+			label={'Word column'}
+			bind:value={excel_document_word_column}
+			min={0}
+			max={excel_document_rows.length}
+		></NumberInput>
+		<p>
+			first word: {excel_document_word_column == 0
+				? 'null'
+				: excel_document_rows[excel_document_word_column - 1]}
+		</p>
+		<NumberInput
+			label={'Kana column'}
+			bind:value={excel_document_kana_column}
+			min={0}
+			max={excel_document_rows.length}
+		></NumberInput>
+		<p>
+			first kana: {excel_document_kana_column == 0
+				? 'null'
+				: excel_document_rows[excel_document_kana_column - 1]}
+		</p>
+		<NumberInput
+			label={'Audio column'}
+			bind:value={excel_document_audio_column}
+			min={0}
+			max={excel_document_rows.length}
+		></NumberInput>
+		<p>
+			first audio: {excel_document_audio_column == 0
+				? 'null'
+				: excel_document_rows[excel_document_audio_column - 1]}
+		</p>
 	</ModalBody>
 	<ModalFooter primaryButtonText="Done" />
 </ComposedModal>
@@ -241,12 +264,14 @@
 				iconDescription={'reset list'}
 				icon={Restart}
 				on:click={() => {
-					edit_data = {
-						info: {
-							name: 'Untitled set'
-						},
-						items: []
-					};
+					if (confirm('Are you sure you want to reset the list?')) {
+						edit_data = {
+							info: {
+								name: 'Untitled set'
+							},
+							items: []
+						};
+					}
 				}}
 			></Button>
 			<div class="x-padding" />
@@ -292,15 +317,14 @@
 	<div class="util-box">
 		<div class="inner">
 			<h4>Audio search (JapanesePod)</h4>
-			<p>this will use JapanesePod's audio bank, enter some kanji and the corresponding
-				 kana, the link may not have any content so try it out in the entry fields first (make sure its kana first then kanji)</p>
-			<TextInput inline labelText={'Kana'} bind:value={
-				current_jp_pod_kana_search
-			}></TextInput>
-			<TextInput inline labelText={'Kanji'} bind:value={
-				current_jp_pod_kanji_search
-			}></TextInput>
-			<br>
+			<p>
+				this will use JapanesePod's audio bank, enter some kanji and the corresponding kana, the
+				link may not have any content so try it out in the entry fields first (make sure its kana
+				first then kanji)
+			</p>
+			<TextInput inline labelText={'Kana'} bind:value={current_jp_pod_kana_search}></TextInput>
+			<TextInput inline labelText={'Kanji'} bind:value={current_jp_pod_kanji_search}></TextInput>
+			<br />
 			<p>
 				{#if current_jp_pod_href == ''}
 					empty
@@ -325,24 +349,27 @@
 		<div class="inner">
 			{#if forvo_enabled}
 				<h4>Audio search (forvo)</h4>
-				<TextInput inline labelText={'Search'} bind:value={
-					current_word_search
-				}></TextInput>
+				<TextInput inline labelText={'Search'} bind:value={current_word_search}></TextInput>
 				<br />
 				<Button icon={SearchLocate} on:click={getWord} iconDescription={'Search'}></Button>
 				<div class="x-padding"></div>
-				<Button icon={TrashCan} on:click={() => {
-					found_word_results = [];
-				}} disabled={loading_results} iconDescription={'Clear'}></Button>
-				<br>
+				<Button
+					icon={TrashCan}
+					on:click={() => {
+						found_word_results = [];
+					}}
+					disabled={loading_results}
+					iconDescription={'Clear'}
+				></Button>
+				<br />
 				{#if loading_results}
 					<p>Loading...</p>
 				{:else}
 					{#each found_word_results as fwr}
 						<div>
-							<br>
+							<br />
 							<p>{fwr.username}</p>
-							<br>
+							<br />
 							<Button
 								icon={Play}
 								on:click={() => playAudio(fwr.pathmp3, false)}
@@ -350,7 +377,7 @@
 								tooltipPosition="left"
 								iconDescription="Play"
 							/>
-							<div class='x-padding'></div>
+							<div class="x-padding"></div>
 							<Button
 								on:click={() => {
 									navigator.clipboard.writeText(fwr.pathmp3);
@@ -363,7 +390,7 @@
 								}}
 								icon={Copy}
 							/>
-							<br>
+							<br />
 						</div>
 					{/each}
 				{/if}
@@ -371,7 +398,6 @@
 		</div>
 	</div>
 </div>
-
 
 <div class="word-list">
 	<DataTable
@@ -429,8 +455,8 @@
 				<Button
 					on:click={() => {
 						current_word_search = row.kana;
-						current_jp_pod_kana_search = convert(row.kana)?.hiragana || "";
-						current_jp_pod_kanji_search = convert(row.kana)?.kanji || "";
+						current_jp_pod_kana_search = convert(row.kana)?.hiragana || '';
+						current_jp_pod_kanji_search = convert(row.kana)?.kanji || '';
 						last_row_search = row.id;
 					}}
 					icon={SearchLocate}

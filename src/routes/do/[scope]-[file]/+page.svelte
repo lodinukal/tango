@@ -18,16 +18,14 @@
 		ModalFooter,
 		ModalHeader,
 		ToastNotification,
-
 		Theme
-
 	} from 'carbon-components-svelte';
 	import { fuzzy, search } from 'fast-fuzzy';
 	import { Play, Rocket, ArrowLeft, Music, Star, StarFilled, Restart } from 'carbon-icons-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
-	import "carbon-components-svelte/css/all.css";
+	import 'carbon-components-svelte/css/all.css';
 	import { playAudio } from '$lib/set';
 	import { createAnimationTriggerAction } from 'svelte-trigger-action';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
@@ -423,7 +421,7 @@
 	let current_learn_progress = getCurrentLearnProgress();
 
 	/**
-	 * 
+	 *
 	 * @param {number} total
 	 */
 	const getCompletion = (total) => {
@@ -500,15 +498,15 @@
 	 * @returns {string}
 	 */
 	const convertSeconds = (seconds) => {
-	const hours = Math.floor(seconds / 3600)
-	const minutes = Math.floor((seconds % 3600) / 60)
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
 
-	if (hours > 0) {
-		return `${hours} hour${hours > 1 ? 's' : ''} : ${minutes} minute${minutes > 1 ? 's' : ''}`
-	} else {
-		return `${minutes} minute${minutes > 1 ? 's' : ''}`
-	}
-	}
+		if (hours > 0) {
+			return `${hours} hour${hours > 1 ? 's' : ''} : ${minutes} minute${minutes > 1 ? 's' : ''}`;
+		} else {
+			return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+		}
+	};
 </script>
 
 <Theme persist persistKey="__theme" />
@@ -571,18 +569,22 @@
 	{#if current_mode == MODE.VIEWING}
 		<div class="start-box">
 			<div class="inner">
-				
 				<h2><b>{got_data.info.name}</b></h2>
 				<Tabs bind:selected={selected_mode} autoWidth>
 					<Tab label="Listening" />
 					<Tab label="Reading" />
 					<Tab label="Writing" />
 				</Tabs>
-				<br>
+				<br />
 				{#key selected_mode}
-				<p>{Math.round(getCompletion(got_data.items.length)[0] * 1000) / 10}%, est. {convertSeconds((getCompletion(got_data.items.length)[2] - getCompletion(got_data.items.length)[1]) * 10)}</p>
+					<p>
+						{Math.round(getCompletion(got_data.items.length)[0] * 1000) / 10}%, est. {convertSeconds(
+							(getCompletion(got_data.items.length)[2] - getCompletion(got_data.items.length)[1]) *
+								10
+						)}
+					</p>
 				{/key}
-				<br>
+				<br />
 				<p>Questions:</p>
 				<Tabs bind:selected={current_count} autoWidth>
 					<Tab label="5" />
@@ -598,7 +600,14 @@
 					on:click={() => startPracticeState(got_data.items)}
 				></Button>
 				<div class="x-padding"></div>
-				<Button iconDescription={'reset progress'} icon={Restart} on:click={() => resetProgress()}
+				<Button
+					iconDescription={'reset progress'}
+					icon={Restart}
+					on:click={() => {
+						if (confirm('Are you sure you want to reset the list?')) {
+							resetProgress();
+						}
+					}}
 				></Button>
 				<div class="bit-padding"></div>
 			</div>
@@ -701,7 +710,8 @@
 							if (incorrect_modal_open) {
 								if (correct) {
 									goNext(false);
-								} else {}
+								} else {
+								}
 								return;
 							}
 
