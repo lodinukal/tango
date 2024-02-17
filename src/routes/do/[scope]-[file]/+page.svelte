@@ -657,6 +657,13 @@
 							const correctness = getCorrectnessCurrentAnswer(text_input);
 							const correct = getCorrectnessCurrentAnswerFull(text_input);
 
+							if (incorrect_modal_open) {
+								if (correct) {
+									goNext(false);
+								} else {}
+								return;
+							}
+
 							if (correct) {
 								goNext(true);
 							} else {
