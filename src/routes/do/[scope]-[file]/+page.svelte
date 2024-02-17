@@ -425,6 +425,7 @@
 	 */
 	const getCompletion = (total) => {
 		const current_set = getLearnProgressSet(selected_mode_name);
+		total *= 3;
 		let got = 0;
 		for (const key in current_set) {
 			const i = current_set[key];
