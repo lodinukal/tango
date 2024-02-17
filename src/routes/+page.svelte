@@ -7,11 +7,12 @@
 		Tab,
 		TextInput,
 		LocalStorage,
-		FileUploaderDropContainer
+		FileUploaderDropContainer,
+		Theme,
 	} from 'carbon-components-svelte';
 	import { Pen, TrashCan } from 'carbon-icons-svelte';
 
-	import 'carbon-components-svelte/css/g100.css';
+	import "carbon-components-svelte/css/all.css";
 
 	/**
 	 * @typedef {import('$lib/set').SetData} SetData
@@ -45,7 +46,21 @@
 
 <LocalStorage key="local_lists" bind:value={local_lists} />
 
+
 <div class="content">
+	<Theme
+	render="toggle"
+	persist
+	persistKey="__theme"
+	toggle={{
+		themes: ["g10", "g100"],
+		labelA: "Enable dark mode",
+		labelB: "Enable dark mode",
+		hideLabel: true,
+		size: "sm",
+	}}
+	/>
+	<br>
 	<p>Make your own</p>
 	<br />
 	<Button

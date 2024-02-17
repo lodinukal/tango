@@ -19,14 +19,17 @@
 		Checkbox,
 
 		Search,
-		Link
+		Link,
+
+		Theme
+
 
 
 	} from 'carbon-components-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
-	import 'carbon-components-svelte/css/g100.css';
+	import "carbon-components-svelte/css/all.css";
 	import {
 		Add,
 		ArrowLeft,
@@ -205,6 +208,8 @@
 	</ModalBody>
 	<ModalFooter primaryButtonText="Done" />
 </ComposedModal>
+
+<Theme persist persistKey="__theme" />
 
 <div class="back-box">
 	<Button
@@ -515,9 +520,16 @@
 		padding-left: 10px;
 		padding-right: 10px;
 		padding-top: 10px;
-		background: #262626;
 		width: 100%;
 		height: 100%;
+	}
+
+	.start-box.inner:theme[g100] {
+		background: #262626;
+	}
+
+	.start-box.inner:theme[white] {
+		background: #f4f4f4;
 	}
 
 	.util-box {
@@ -535,9 +547,17 @@
 		padding-left: 10px;
 		padding-right: 10px;
 		padding-top: 10px;
-		background: #262626;
 		width: 100%;
 		height: 100%;
+	}
+
+	/* Dark mode */
+	.util-box .inner:theme[g100] {
+		background: #262626;
+	}
+
+	.util-box .inner:theme[white] {
+		background: #f4f4f4;
 	}
 
 	/* Split the screen in half */

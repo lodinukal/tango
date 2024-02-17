@@ -17,14 +17,17 @@
 		ModalBody,
 		ModalFooter,
 		ModalHeader,
-		ToastNotification
+		ToastNotification,
+
+		Theme
+
 	} from 'carbon-components-svelte';
 	import { fuzzy, search } from 'fast-fuzzy';
 	import { Play, Rocket, ArrowLeft, Music, Star, StarFilled, Restart } from 'carbon-icons-svelte';
 	/**
 	 * @typedef {import("carbon-components-svelte/src/DataTable/DataTable.svelte").DataTableRow} DataTableRow
 	 */
-	import 'carbon-components-svelte/css/g100.css';
+	import "carbon-components-svelte/css/all.css";
 	import { playAudio } from '$lib/set';
 	import { createAnimationTriggerAction } from 'svelte-trigger-action';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
@@ -508,6 +511,8 @@
 	}
 </script>
 
+<Theme persist persistKey="__theme" />
+
 <LocalStorage key="count_chosen" bind:value={current_count} />
 <LocalStorage key="mode_chosen" bind:value={selected_mode} />
 <LocalStorage key={`tango_progress_set_scope${data.scope}_id_${data.file}`} bind:value={progress} />
@@ -566,6 +571,7 @@
 	{#if current_mode == MODE.VIEWING}
 		<div class="start-box">
 			<div class="inner">
+				
 				<h2><b>{got_data.info.name}</b></h2>
 				<Tabs bind:selected={selected_mode} autoWidth>
 					<Tab label="Listening" />
@@ -775,8 +781,15 @@
 		left: 0;
 		width: 100%;
 		height: 50px;
-		background: #262626;
 		z-index: -1;
+	}
+
+	.top-bar:theme[g100] {
+		background: #262626;
+	}
+
+	.top-bar:theme[white] {
+		background: #f4f4f4;
 	}
 
 	.mid-content-frame {
@@ -809,8 +822,14 @@
 		left: 0;
 		width: 100%;
 		height: 80px;
-		background: #262626;
 		z-index: -1;
+	}
+	.bottom-bar:theme[g100] {
+		background: #262626;
+	}
+
+	.bottom-bar:theme[white] {
+		background: #f4f4f4;
 	}
 
 	.bottom-bar-text-area {
@@ -846,9 +865,16 @@
 	.start-box .inner {
 		padding-left: 10px;
 		padding-top: 10px;
-		background: #262626;
 		width: 100%;
 		height: 100%;
+	}
+
+	.star-holder.inner:theme[g100] {
+		background: #262626;
+	}
+
+	.star-holder.inner:theme[white] {
+		background: #f4f4f4;
 	}
 
 	.bit-padding {
