@@ -428,10 +428,9 @@
 		let got = 0;
 		for (const key in current_set) {
 			const i = current_set[key];
-			total += 3;
 			got += i.learn_stars;
 		}
-		return got / (total * 3);
+		return [got / (total * 3), got, total];
 	};
 
 	const resetProgress = () => {
@@ -491,6 +490,21 @@
 	let result_player_incorrect = new Audio(); // '/sounds/incorrect.mp3'
 
 	let incorrect_modal_open = false;
+
+	/**
+	 * @param {number} seconds
+	 * @returns {string}
+	 */
+	const convertSeconds = (seconds) => {
+	const hours = Math.floor(seconds / 3600)
+	const minutes = Math.floor((seconds % 3600) / 60)
+
+	if (hours > 0) {
+		return `${hours} hour${hours > 1 ? 's' : ''} : ${minutes} minute${minutes > 1 ? 's' : ''}`
+	} else {
+		return `${minutes} minute${minutes > 1 ? 's' : ''}`
+	}
+	}
 </script>
 
 <LocalStorage key="count_chosen" bind:value={current_count} />
@@ -559,7 +573,7 @@
 				</Tabs>
 				<br>
 				{#key selected_mode}
-				<p>{Math.round(getCompletion(got_data.items.length) * 1000) / 10}%</p>
+				<p>{Math.round(getCompletion(got_data.items.length)[0] * 1000) / 10}%, est. {convertSeconds((getCompletion(got_data.items.length)[2] - getCompletion(got_data.items.length)[1]) * 10)}</p>
 				{/key}
 				<br>
 				<p>Questions:</p>
