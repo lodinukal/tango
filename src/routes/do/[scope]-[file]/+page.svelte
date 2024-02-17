@@ -431,7 +431,7 @@
 			const i = current_set[key];
 			got += i.learn_stars;
 		}
-		return [got / (total * 3), got, total];
+		return [got / total, got, total];
 	};
 
 	const resetProgress = () => {
