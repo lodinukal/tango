@@ -419,6 +419,21 @@
 	};
 	let current_learn_progress = getCurrentLearnProgress();
 
+	/**
+	 * 
+	 * @param {number} total
+	 */
+	const getCompletion = (total) => {
+		const current_set = getLearnProgressSet(selected_mode_name);
+		let got = 0;
+		for (const key in current_set) {
+			const i = current_set[key];
+			total += 3;
+			got += i.learn_stars;
+		}
+		return got / (total * 3);
+	};
+
 	const resetProgress = () => {
 		progress = {
 			progress_listening: {},
@@ -542,6 +557,11 @@
 					<Tab label="Reading" />
 					<Tab label="Writing" />
 				</Tabs>
+				<br>
+				{#key selected_mode}
+				<p>{Math.round(getCompletion(got_data.items.length) * 1000) / 10}%</p>
+				{/key}
+				<br>
 				<p>Questions:</p>
 				<Tabs bind:selected={current_count} autoWidth>
 					<Tab label="5" />
