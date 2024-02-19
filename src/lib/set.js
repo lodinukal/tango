@@ -16,6 +16,7 @@
  * @property {string} kana
  * @property {string} audio
  * @property {string[]} examples
+ * @property {string?} hint
  */
 
 let audio_player = new Audio();

@@ -685,6 +685,7 @@
 							: current_practice_state?.current_item?.kana || '?'}
 					</p>
 				{/if}
+				<p>{current_practice_state?.current_item?.hint || "(no hint)"}</p>
 			</div>
 		</div>
 		<div class="bottom-bar">

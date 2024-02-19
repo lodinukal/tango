@@ -182,7 +182,8 @@
 				kana: excel_document_kana_column == 0 ? '' : row[excel_document_kana_column - 1].toString(),
 				audio:
 					excel_document_audio_column == 0 ? '' : row[excel_document_audio_column - 1].toString(),
-				examples: []
+				examples: [],
+				hint: ''
 			});
 		}
 		save();
@@ -405,6 +406,7 @@
 			{ key: 'word', value: 'Word', width: '50%px' },
 			{ key: 'kana', value: 'Kana', width: '50%px' },
 			{ key: 'audio', value: 'Audio' },
+			{ key: 'hint', value: 'Hint' },
 			{ key: 'search_forvo', value: 'Search' }
 		]}
 		rows={[
@@ -435,7 +437,8 @@
 										kana: '言葉',
 										audio:
 											'https://d1vjc5dkcd3yh2.cloudfront.net/audio/b8b9e1a29679cebabb8175df6a9898cc.mp3',
-										examples: []
+										examples: [],
+										hint: ''
 									}
 								]
 							};
@@ -499,6 +502,17 @@
 					on:input={(e) => {
 						if (edit_data == null) return;
 						edit_data.items[row.id].audio = e.detail?.toString() || '';
+						edit_data = edit_data;
+						save();
+					}}
+				/>
+				<TextInput
+					labelText="Hint"
+					value={edit_data.items[row.id].hint}
+					inline
+					on:input={(e) => {
+						if (edit_data == null) return;
+						edit_data.items[row.id].hint = e.detail?.toString() || '';
 						edit_data = edit_data;
 						save();
 					}}
