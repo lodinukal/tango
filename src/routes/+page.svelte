@@ -53,9 +53,9 @@
 	persist
 	persistKey="__theme"
 	toggle={{
-		themes: ["g10", "g100"],
-		labelA: "Enable dark mode",
-		labelB: "Enable dark mode",
+		themes: ["g100", "g10"],
+		labelA: "Toggle light mode",
+		labelB: "Toggle light mode",
 		hideLabel: true,
 		size: "sm",
 	}}
