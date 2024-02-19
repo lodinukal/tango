@@ -705,8 +705,9 @@
 					bind:value={text_input}
 					on:keydown={(event) => {
 						if (event.key == 'Enter' && !locked) {
-							const correctness = getCorrectnessCurrentAnswer(text_input);
-							const correct = getCorrectnessCurrentAnswerFull(text_input);
+							const use_answer = text_input.trim().toLowerCase();
+							const correctness = getCorrectnessCurrentAnswer(use_answer);
+							const correct = getCorrectnessCurrentAnswerFull(use_answer);
 
 							if (incorrect_modal_open) {
 								if (correct) {
