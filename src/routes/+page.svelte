@@ -53,8 +53,8 @@
 	persist
 	persistKey="__theme"
 	
+	theme="g100"
 	toggle={{
-		theme: "g100",
 		themes: ["g100", "g10"],
 		labelA: "Toggle light mode",
 		labelB: "Toggle light mode",
