@@ -49,6 +49,8 @@
 	 */
 	let save_data = null;
 
+	let title = 'Loading...';
+
 	/**
 	 * @type {SetData}
 	 */
@@ -158,7 +160,15 @@
 	 * @type {?number}
 	 */
 	let last_row_search = null;
+
+	$: {
+		title = `editing ${edit_data.info.name}`;
+	}
 </script>
+
+<head>
+	<title>{title}</title>
+</head>
 
 <ComposedModal
 	open={excel_import_modal_open}
@@ -257,6 +267,7 @@
 						};
 					}
 					edit_data.info.name = e.detail?.toString() || '';
+					title = `editing ${edit_data.info.name}`;
 					save();
 				}}
 			/>

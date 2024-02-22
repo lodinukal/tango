@@ -37,7 +37,11 @@
 	/** @type {import('./$types').PageData} */
 	export let data;
 
+	let title = 'Loading...';
 	let loaded_data = getData();
+	loaded_data.then((d) => {
+		title = d.info.name;
+	});
 
 	/**
 	 * @typedef {import('$lib/set').SetData} SetData
@@ -455,7 +459,7 @@
 
 		let maximum = 0;
 		current_practice_state.valid_answers.forEach((i) => {
-			const score = fuzzy(i, answer, {
+			const score = fuzzy(i.toLocaleLowerCase(), answer.toLocaleLowerCase(), {
 				ignoreSymbols: true,
 				ignoreCase: true
 			});
@@ -475,7 +479,7 @@
 
 		let correct = false;
 		current_practice_state.valid_answers.forEach((i) => {
-			if (i == answer) {
+			if (i.toLocaleLowerCase() == answer.toLocaleLowerCase()) {
 				correct = true;
 			}
 		});
@@ -508,6 +512,12 @@
 		}
 	};
 </script>
+
+<head>
+	<title>
+		{title}
+	</title>
+</head>
 
 <Theme persist persistKey="__theme" />
 
@@ -685,7 +695,7 @@
 							: current_practice_state?.current_item?.kana || '?'}
 					</p>
 				{/if}
-				<p>{current_practice_state?.current_item?.hint || "(no hint)"}</p>
+				<p>{current_practice_state?.current_item?.hint || '(no hint)'}</p>
 			</div>
 		</div>
 		<div class="bottom-bar">
