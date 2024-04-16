@@ -167,6 +167,7 @@ export async function GET({ url }) {
 	const api = `https://forvo.com/word/${word}/`;
 	const response = await fetch(api);
 	if (!response.ok) {
+		console.log(`Could not get ${word}: ${response.status}`);
 		return new Response(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
 	}
 
