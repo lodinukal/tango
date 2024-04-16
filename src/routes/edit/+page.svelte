@@ -88,12 +88,8 @@
 	let current_word_search = '';
 	/**
 	 * @typedef Result
-	 * @prop {number} id
-	 * @prop {string} word
-	 * @prop {string} pathmp3
-	 * @prop {string} pathogg
-	 * @prop {number} hits
-	 * @prop {string} username
+	 * @prop {string} name
+	 * @prop {string} path 
 	 */
 	/**
 	 * @type {Result[]}
@@ -102,10 +98,8 @@
 	let loading_results = false;
 	const getWord = async () => {
 		loading_results = true;
-		found_word_results = (await (await fetch(`/api/word-get?word=${current_word_search}`)).json())
-			.items;
-		found_word_results.sort((a, b) => b.hits - a.hits);
-		found_word_results = found_word_results.slice(0, 5);
+		const fetched = await fetch(`/api/word-get?word=${current_word_search}`);
+		found_word_results = await fetched.json();
 		loading_results = false;
 	};
 
@@ -155,7 +149,7 @@
 		}
 	}
 
-	const forvo_enabled = localStorage.getItem('forvo_enabled') === 'true';
+	const forvo_enabled = true; localStorage.getItem('forvo_enabled') === 'true';
 	/**
 	 * @type {?number}
 	 */
@@ -380,24 +374,22 @@
 					{#each found_word_results as fwr}
 						<div>
 							<br />
-							<p>{fwr.username}</p>
+							<p>{fwr.name}</p>
 							<br />
 							<Button
 								icon={Play}
-								on:click={() => playAudio(fwr.pathmp3, false)}
-								disabled={fwr.pathmp3 == ''}
+								on:click={() => playAudio(fwr.path, true)}
 								tooltipPosition="left"
 								iconDescription="Play"
 							/>
 							<div class="x-padding"></div>
 							<Button
 								on:click={() => {
-									navigator.clipboard.writeText(fwr.pathmp3);
+									navigator.clipboard.writeText(fwr.path);
 									if (last_row_search) {
-										edit_data.items[last_row_search].audio = fwr.pathmp3;
+										edit_data.items[last_row_search].audio = fwr.path;
 										save();
 										last_row_search = null;
-										playAudio(fwr.pathmp3, false);
 									}
 								}}
 								icon={Copy}
