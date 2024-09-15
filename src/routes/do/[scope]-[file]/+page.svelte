@@ -384,7 +384,7 @@
 				},
 				duration: 1000
 			});
-			result_player_correct.play();
+			// result_player_correct.play();
 		} else {
 		}
 
