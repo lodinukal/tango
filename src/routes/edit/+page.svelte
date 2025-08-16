@@ -89,7 +89,7 @@
 	/**
 	 * @typedef Result
 	 * @prop {string} name
-	 * @prop {string} path 
+	 * @prop {string} path
 	 */
 	/**
 	 * @type {Result[]}
@@ -149,7 +149,8 @@
 		}
 	}
 
-	const forvo_enabled = true; localStorage.getItem('forvo_enabled') === 'true';
+	const forvo_enabled = true;
+	localStorage.getItem('forvo_enabled') === 'true';
 	/**
 	 * @type {?number}
 	 */
@@ -567,14 +568,6 @@
 		height: 100%;
 	}
 
-	.start-box.inner:theme[g100] {
-		background: #262626;
-	}
-
-	.start-box.inner:theme[white] {
-		background: #f4f4f4;
-	}
-
 	.util-box {
 		left: 0;
 		width: 340px;
@@ -592,15 +585,6 @@
 		padding-top: 10px;
 		width: 100%;
 		height: 100%;
-	}
-
-	/* Dark mode */
-	.util-box .inner:theme[g100] {
-		background: #262626;
-	}
-
-	.util-box .inner:theme[white] {
-		background: #f4f4f4;
 	}
 
 	/* Split the screen in half */

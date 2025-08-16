@@ -1,32 +1,31 @@
-var kanjiRange = /[\u3300-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
+const kanjiRange: RegExp = /[\u3300-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
 
 // Always useful to have lying around
-var AssociativeArray = function () {
-	return {
-		keys: [],
-		values: [],
-		length: 0,
-		put: function (key, value) {
-			this[key] = value;
-			this.keys.push(key);
-			this.values.push(value);
-			this.length++;
-		},
-		remove: function (key) {
-			delete this[key];
-			var kpos = 0;
-			while (kpos > -1) {
-				kpos = this.keys.indexOf(key);
-				this.keys[kpos] = '';
-				this.values[kpos] = '';
-			}
-		}
-	};
-};
+class AssociativeArray {
+    keys: string[] = [];
+    values: any[] = [];
+    length = 0;
+    put(key: string, value: any) {
+        (this as any)[key] = value;
+        this.keys.push(key);
+        this.values.push(value);
+        this.length++;
+    }
+    remove(key: string) {
+        delete (this as any)[key];
+        let kpos = 0;
+        while (kpos > -1) {
+            kpos = this.keys.indexOf(key);
+            if (kpos > -1) {
+                this.keys[kpos] = '';
+                this.values[kpos] = '';
+            }
+        }
+    }
+}
 
 // double consonant mappings
-var dcmap = new AssociativeArray();
-
+const dcmap = new AssociativeArray();
 dcmap.put('kk', 'っk');
 dcmap.put('tt', 'っt');
 dcmap.put('cc', 'っc');
@@ -41,21 +40,21 @@ dcmap.put('nb', 'んb');
 dcmap.put('np', 'んp');
 
 // tracks ascii -> hiragana
-var map = [
-	null,
-	new AssociativeArray(),
-	new AssociativeArray(),
-	new AssociativeArray(),
-	new AssociativeArray()
+const map: (AssociativeArray | null)[] = [
+    null,
+    new AssociativeArray(),
+    new AssociativeArray(),
+    new AssociativeArray(),
+    new AssociativeArray()
 ];
 
 // tracks hiragana -> ascii
-var rmap = [null, new AssociativeArray(), new AssociativeArray()];
+const rmap: (AssociativeArray | null)[] = [null, new AssociativeArray(), new AssociativeArray()];
 
 // adds a mapping to the tracking objects
-var addMapping = function (key, val) {
-	map[key.length].put(key, val);
-	rmap[val.length].put(val, key);
+const addMapping = (key: string, val: string) => {
+    map[key.length]?.put(key, val);
+    rmap[val.length]?.put(val, key);
 };
 
 /**
@@ -426,7 +425,7 @@ addMapping('xwa', 'ゎ');
 addMapping('-', 'ー'); // long vowel mark
 
 /*
-addMapping(' ', '　');  // japanese space
+addMapping(' ', ' ');  // japanese space
 addMapping('[', '「');  // japanese opening quote
 addMapping(']', '」');  // japanese opening quote
 addMapping('*', '＊');  // japanese asterisk
@@ -437,207 +436,200 @@ addMapping(',', '、');  // japanese comma
 
 // all hira glyphs
 var hiragana = [
-	'ぁ',
-	'あ',
-	'ぃ',
-	'い',
-	'ぅ',
-	'う',
-	'ぇ',
-	'え',
-	'ぉ',
-	'お',
-	'か',
-	'が',
-	'き',
-	'ぎ',
-	'く',
-	'ぐ',
-	'け',
-	'げ',
-	'こ',
-	'ご',
-	'さ',
-	'ざ',
-	'し',
-	'じ',
-	'す',
-	'ず',
-	'せ',
-	'ぜ',
-	'そ',
-	'ぞ',
-	'た',
-	'だ',
-	'ち',
-	'ぢ',
-	'っ',
-	'つ',
-	'づ',
-	'て',
-	'で',
-	'と',
-	'ど',
-	'な',
-	'に',
-	'ぬ',
-	'ね',
-	'の',
-	'は',
-	'ば',
-	'ぱ',
-	'ひ',
-	'び',
-	'ぴ',
-	'ふ',
-	'ぶ',
-	'ぷ',
-	'へ',
-	'べ',
-	'ぺ',
-	'ほ',
-	'ぼ',
-	'ぽ',
-	'ま',
-	'み',
-	'む',
-	'め',
-	'も',
-	'ゃ',
-	'や',
-	'ゅ',
-	'ゆ',
-	'ょ',
-	'よ',
-	'ら',
-	'り',
-	'る',
-	'れ',
-	'ろ',
-	'ゎ',
-	'わ',
-	'ゐ',
-	'ゑ',
-	'を',
-	'ん',
-	'ゔ',
-	'ゕ',
-	'ゖ',
-	'わ゛',
-	'ゐ゛',
-	'ゑ゛',
-	'を゛'
+    'ぁ',
+    'あ',
+    'ぃ',
+    'い',
+    'ぅ',
+    'う',
+    'ぇ',
+    'え',
+    'ぉ',
+    'お',
+    'か',
+    'が',
+    'き',
+    'ぎ',
+    'く',
+    'ぐ',
+    'け',
+    'げ',
+    'こ',
+    'ご',
+    'さ',
+    'ざ',
+    'し',
+    'じ',
+    'す',
+    'ず',
+    'せ',
+    'ぜ',
+    'そ',
+    'ぞ',
+    'た',
+    'だ',
+    'ち',
+    'ぢ',
+    'っ',
+    'つ',
+    'づ',
+    'て',
+    'で',
+    'と',
+    'ど',
+    'な',
+    'に',
+    'ぬ',
+    'ね',
+    'の',
+    'は',
+    'ば',
+    'ぱ',
+    'ひ',
+    'び',
+    'ぴ',
+    'ふ',
+    'ぶ',
+    'ぷ',
+    'へ',
+    'べ',
+    'ぺ',
+    'ほ',
+    'ぼ',
+    'ぽ',
+    'ま',
+    'み',
+    'む',
+    'め',
+    'も',
+    'ゃ',
+    'や',
+    'ゅ',
+    'ゆ',
+    'ょ',
+    'よ',
+    'ら',
+    'り',
+    'る',
+    'れ',
+    'ろ',
+    'ゎ',
+    'わ',
+    'ゐ',
+    'ゑ',
+    'を',
+    'ん',
+    'ゔ',
+    'ゕ',
+    'ゖ',
+    'わ゛',
+    'ゐ゛',
+    'ゑ゛',
+    'を゛'
 ];
 
 // all kata glyphs
 var katakana = [
-	'ァ',
-	'ア',
-	'ィ',
-	'イ',
-	'ゥ',
-	'ウ',
-	'ェ',
-	'エ',
-	'ォ',
-	'オ',
-	'カ',
-	'ガ',
-	'キ',
-	'ギ',
-	'ク',
-	'グ',
-	'ケ',
-	'ゲ',
-	'コ',
-	'ゴ',
-	'サ',
-	'ザ',
-	'シ',
-	'ジ',
-	'ス',
-	'ズ',
-	'セ',
-	'ゼ',
-	'ソ',
-	'ゾ',
-	'タ',
-	'ダ',
-	'チ',
-	'ヂ',
-	'ッ',
-	'ツ',
-	'ヅ',
-	'テ',
-	'デ',
-	'ト',
-	'ド',
-	'ナ',
-	'ニ',
-	'ヌ',
-	'ネ',
-	'ノ',
-	'ハ',
-	'バ',
-	'パ',
-	'ヒ',
-	'ビ',
-	'ピ',
-	'フ',
-	'ブ',
-	'プ',
-	'ヘ',
-	'ベ',
-	'ペ',
-	'ホ',
-	'ボ',
-	'ポ',
-	'マ',
-	'ミ',
-	'ム',
-	'メ',
-	'モ',
-	'ャ',
-	'ヤ',
-	'ュ',
-	'ユ',
-	'ョ',
-	'ヨ',
-	'ラ',
-	'リ',
-	'ル',
-	'レ',
-	'ロ',
-	'ヮ',
-	'ワ',
-	'ヰ',
-	'ヱ',
-	'ヲ',
-	'ン',
-	'ヴ',
-	'ヵ',
-	'ヶ',
-	'ヷ',
-	'ヸ',
-	'ヹ',
-	'ヺ'
+    'ァ',
+    'ア',
+    'ィ',
+    'イ',
+    'ゥ',
+    'ウ',
+    'ェ',
+    'エ',
+    'ォ',
+    'オ',
+    'カ',
+    'ガ',
+    'キ',
+    'ギ',
+    'ク',
+    'グ',
+    'ケ',
+    'ゲ',
+    'コ',
+    'ゴ',
+    'サ',
+    'ザ',
+    'シ',
+    'ジ',
+    'ス',
+    'ズ',
+    'セ',
+    'ゼ',
+    'ソ',
+    'ゾ',
+    'タ',
+    'ダ',
+    'チ',
+    'ヂ',
+    'ッ',
+    'ツ',
+    'ヅ',
+    'テ',
+    'デ',
+    'ト',
+    'ド',
+    'ナ',
+    'ニ',
+    'ヌ',
+    'ネ',
+    'ノ',
+    'ハ',
+    'バ',
+    'パ',
+    'ヒ',
+    'ビ',
+    'ピ',
+    'フ',
+    'ブ',
+    'プ',
+    'ヘ',
+    'ベ',
+    'ペ',
+    'ホ',
+    'ボ',
+    'ポ',
+    'マ',
+    'ミ',
+    'ム',
+    'メ',
+    'モ',
+    'ャ',
+    'ヤ',
+    'ュ',
+    'ユ',
+    'ョ',
+    'ヨ',
+    'ラ',
+    'リ',
+    'ル',
+    'レ',
+    'ロ',
+    'ヮ',
+    'ワ',
+    'ヰ',
+    'ヱ',
+    'ヲ',
+    'ン',
+    'ヴ',
+    'ヵ',
+    'ヶ',
+    'ヷ',
+    'ヸ',
+    'ヹ',
+    'ヺ'
 ];
 
 // replace values from array 1 with corresponding values from array 2
-/**
- * 
- * @param {any[]} searcharray 
- * @param {any[]} replacearray 
- * @param {string} input 
- * @returns 
- */
-var replaceArray = function (searcharray, replacearray, input) {
-	var i,
-		e = searcharray.length;
-	for (i = 0; i < e; i++) {
-		input = input.replace(new RegExp(searcharray[i], 'g'), replacearray[i]);
-	}
-	return input;
+var replaceArray = function (searcharray: (string | RegExp)[], replacearray: string[], input: string) {
+    var i,
+        e = searcharray.length;
+    for (i = 0; i < e; i++) {
+        input = input.replace(new RegExp(searcharray[i], 'g'), replacearray[i]);
+    }
+    return input;
 };
 
 /**
@@ -645,92 +637,87 @@ var replaceArray = function (searcharray, replacearray, input) {
  * @param {string} kana - The kana string to romanise
  * @returns {string} The romanised string
  */
-export function romanise(kana) {
-	if (new RegExp('[\u30A0-\u30FF]').test(kana)) {
-		kana = replaceArray(katakana, hiragana, kana);
-	}
-	// make sure っ is not in the reverse mapping, because it causes quite some problems
-	rmap[1].remove('っ');
-	var result = kana;
-	result = replaceArray(rmap[2].keys, rmap[2].values, result);
-	result = replaceArray(rmap[1].keys, rmap[1].values, result);
-	// then do sensible っ replacement instead
-	result = result.replace(/っ(\w)/g, '$1$1');
-	// turn a trailing っ into a "!" because that's the most semantically correct I can come up with
-	result = result.replace(/っ$/, '!');
-	return result;
+export function romanise(kana: string): string {
+    if (new RegExp('[\u30A0-\u30FF]').test(kana)) {
+        kana = replaceArray(katakana, hiragana, kana);
+    }
+    // make sure っ is not in the reverse mapping, because it causes quite some problems
+    rmap[1]!.remove('っ');
+    var result = kana;
+    result = replaceArray(rmap[2]!.keys, rmap[2]!.values, result);
+    result = replaceArray(rmap[1]!.keys, rmap[1]!.values, result);
+    // then do sensible っ replacement instead
+    result = result.replace(/っ(\w)/g, '$1$1');
+    // turn a trailing っ into a "!" because that's the most semantically correct I can come up with
+    result = result.replace(/っ$/, '!');
+    return result;
 }
 
-/**
- * @typedef {object} Kana
- * @property {?string} kanji - The kanji representation of the input
- * @property {?string} hiragana - The hiragana representation of the input
- * @property {?string} katakana - The katakana representation of the input
- * @property {?string} romaji - The romaji representation of the input
- */
+export type Kana = {
+    /// The kanji representation of the input
+    kanji: string | null;
+    /// The hiragana representation of the input
+    hiragana: string | null;
+    /// The katakana representation of the input
+    katakana: string | null;
+    /// The romaji representation of the input
+    romaji: string | null;
+};
 
-/**
- * Convert input from romaji to kana
- * @param {string} input - The input to convert
- * @returns {?Kana} The converted kana
- */
-export function convert(input) {
-	/**
-	 * @type {Kana}
-	 */
-	var output = {
-		kanji: null,
-		hiragana: null,
-		katakana: null,
-		romaji: input
-	};
+export function convert(input: string): Kana | null {
+    var output: Kana = {
+        kanji: null,
+        hiragana: null,
+        katakana: null,
+        romaji: input
+    };
 
-	// does the input contain any kanji?
-	if (new RegExp(kanjiRange).test(input)) {
-		output.kanji = input;
-		output.romaji = null;
-		return output;
-	}
+    // does the input contain any kanji?
+    if (new RegExp(kanjiRange).test(input)) {
+        output.kanji = input;
+        output.romaji = null;
+        return output;
+    }
 
-	// but does the input contain any kana?
-	if (new RegExp('[\u3040-\u30FF]').test(input)) {
-		output.romaji = romanise(input);
-	}
+    // but does the input contain any kana?
+    if (new RegExp('[\u3040-\u30FF]').test(input)) {
+        output.romaji = romanise(input);
+    }
 
-	// convert, or touch up, input to katakana and hiragana
-	output.katakana = replaceArray(
-		['aa', 'ii', 'uu', 'ee', 'oo'],
-		['a-', 'i-', 'u-', 'e-', 'o-'],
-		input
-	);
-	output.katakana = replaceArray(dcmap.keys, dcmap.values, output.katakana);
-	output.hiragana = replaceArray(dcmap.keys, dcmap.values, input);
+    // convert, or touch up, input to katakana and hiragana
+    output.katakana = replaceArray(
+        ['aa', 'ii', 'uu', 'ee', 'oo'],
+        ['a-', 'i-', 'u-', 'e-', 'o-'],
+        input
+    );
+    output.katakana = replaceArray(dcmap.keys, dcmap.values, output.katakana);
+    output.hiragana = replaceArray(dcmap.keys, dcmap.values, input);
 
-	// successively replace
-	for (var i = 4; i > 0; i--) {
-		if (map[i]) {
-			output.katakana = replaceArray(map[i].keys, map[i].values, output.katakana);
-			output.hiragana = replaceArray(map[i].keys, map[i].values, output.hiragana);
-		}
-	}
+    // successively replace
+    for (var i = 4; i > 0; i--) {
+        if (map[i]) {
+            output.katakana = replaceArray(map[i]!.keys, map[i]!.values, output.katakana);
+            output.hiragana = replaceArray(map[i]!.keys, map[i]!.values, output.hiragana);
+        }
+    }
 
-	// do the final katakana conversion step
-	output.katakana = replaceArray(hiragana, katakana, output.katakana);
+    // do the final katakana conversion step
+    output.katakana = replaceArray(hiragana, katakana, output.katakana);
 
-	// if the katakana still contains ascii, this word cannot be converted
-	if (new RegExp('[\u0040-\u007A]').test(output.katakana || "")) {
-		return null;
-	}
+    // if the katakana still contains ascii, this word cannot be converted
+    if (new RegExp('[\u0040-\u007A]').test(output.katakana || "")) {
+        return null;
+    }
 
-	// if the hiragana word contains any katakana, it cannot be a word spelled using hiragana
-	else if (new RegExp('[\u30A0-\u30FF]').test(output.hiragana || "")) {
-		output.hiragana = null;
-	}
+    // if the hiragana word contains any katakana, it cannot be a word spelled using hiragana
+    else if (new RegExp('[\u30A0-\u30FF]').test(output.hiragana || "")) {
+        output.hiragana = null;
+    }
 
-	// for romanising purposes, a training っ cannot be transliterated in any sensible way...
-	if (output.romaji) {
-		output.romaji = output.romaji.replace(/っ$/, '!');
-	}
+    // for romanising purposes, a training っ cannot be transliterated in any sensible way...
+    if (output.romaji) {
+        output.romaji = output.romaji.replace(/っ$/, '!');
+    }
 
-	return output;
+    return output;
 }

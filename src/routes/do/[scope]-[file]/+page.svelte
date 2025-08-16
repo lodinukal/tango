@@ -805,14 +805,6 @@
 		z-index: -1;
 	}
 
-	.top-bar:theme[g100] {
-		background: #262626;
-	}
-
-	.top-bar:theme[white] {
-		background: #f4f4f4;
-	}
-
 	.mid-content-frame {
 		position: absolute;
 		left: 0;
@@ -844,13 +836,6 @@
 		width: 100%;
 		height: 80px;
 		z-index: -1;
-	}
-	.bottom-bar:theme[g100] {
-		background: #262626;
-	}
-
-	.bottom-bar:theme[white] {
-		background: #f4f4f4;
 	}
 
 	.bottom-bar-text-area {
@@ -888,14 +873,6 @@
 		padding-top: 10px;
 		width: 100%;
 		height: 100%;
-	}
-
-	.star-holder.inner:theme[g100] {
-		background: #262626;
-	}
-
-	.star-holder.inner:theme[white] {
-		background: #f4f4f4;
 	}
 
 	.bit-padding {
